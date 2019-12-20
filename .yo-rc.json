@@ -1,0 +1,39 @@
+{
+  "generator-jhipster": {
+    "promptValues": {
+      "packageName": "com.akulinski.r8meservice"
+    },
+    "jhipsterVersion": "6.5.1",
+    "applicationType": "monolith",
+    "baseName": "r8meuserservice2",
+    "packageName": "com.akulinski.r8meservice",
+    "packageFolder": "com/akulinski/r8meservice",
+    "serverPort": "8080",
+    "authenticationType": "jwt",
+    "cacheProvider": "redis",
+    "enableHibernateCache": true,
+    "websocket": false,
+    "databaseType": "sql",
+    "devDatabaseType": "h2Disk",
+    "prodDatabaseType": "postgresql",
+    "searchEngine": "elasticsearch",
+    "messageBroker": "kafka",
+    "serviceDiscoveryType": "eureka",
+    "buildTool": "maven",
+    "enableSwaggerCodegen": false,
+    "jwtSecretKey": "YjQxZmNiMGJlNDI3Yjk0MGIwYTJmNGY0MTkyMGU5NTAyODBmOTQ4MzRhYzMyN2YwZjRlZmM1NWI1YWUxZmUwMWIzYWE3M2Q4NTdlMmE0ZDRkMjlhNTc5NTdlMTEyYzJhMjM3YWNiYzVlZTlmZGYzMmFhMDQwNTUyOGY2ZDA4MGI=",
+    "embeddableLaunchScript": false,
+    "useSass": true,
+    "clientPackageManager": "npm",
+    "clientFramework": "angularX",
+    "clientTheme": "materia",
+    "clientThemeVariant": "primary",
+    "testFrameworks": [],
+    "jhiPrefix": "jhi",
+    "entitySuffix": "",
+    "dtoSuffix": "DTO",
+    "otherModules": [],
+    "enableTranslation": false,
+    "blueprints": []
+  }
+}
