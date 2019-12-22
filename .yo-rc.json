@@ -34,6 +34,10 @@
     "dtoSuffix": "DTO",
     "otherModules": [],
     "enableTranslation": false,
-    "blueprints": []
+    "blueprints": [],
+    "appsFolders": ["r8meuserservice2"],
+    "directoryPath": "../",
+    "monitoring": "elk",
+    "consoleOptions": ["curator"]
   }
 }
