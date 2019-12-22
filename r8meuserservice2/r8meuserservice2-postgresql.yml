@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: r8meuserservice2-postgresql
+  namespace: userr8me
+  labels:
+    app: r8meuserservice2-postgresql
+type: Opaque
+data:
+  postgresql-password: MjE0ZGJmNjg1YzU3YzYwNmRiODUyYzQ1YjU5YWVmMmZlMjhiZDJiNjU1YTg2YTc0NTVhOGQyNTBlY2YzMmQxMmFhNzU3MmM1Y2EwMzZmNWE5MmEzNjk0MThhMTdhMDAzMDg5YjIwYWY1ZWUyZDQ2N2IxMjRhYTIyMjVlNDU1ODlkNmZjNTQwMzU5OWIwMmNmOTBkYWU3Njg1OTIwZjkyNDEzNzFmMzdmZTMzNTdiMzAwMzYyMGYyZjY5YjRiNjk2OGNlMjVmZDU0YTg3NmFlZGU2NGFkM2FjYTY1ZjQyYzkyMDRlNzA3ZGUyZDI4YzUxNGM3MTY1ZmRmYTQwNTk0Nw==
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: r8meuserservice2-postgresql
+  namespace: userr8me
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: r8meuserservice2-postgresql
+  template:
+    metadata:
+      labels:
+        app: r8meuserservice2-postgresql
+    spec:
+      volumes:
+        - name: data
+          emptyDir: {}
+      containers:
+        - name: postgres
+          image: postgres:11.5
+          env:
+            - name: POSTGRES_USER
+              value: r8meuserservice2
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: r8meuserservice2-postgresql
+                  key: postgresql-password
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: r8meuserservice2-postgresql
+  namespace: userr8me
+spec:
+  selector:
+    app: r8meuserservice2-postgresql
+  ports:
+    - port: 5432

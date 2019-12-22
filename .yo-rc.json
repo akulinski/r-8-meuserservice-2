@@ -38,6 +38,12 @@
     "appsFolders": ["r8meuserservice2"],
     "directoryPath": "../",
     "monitoring": "elk",
-    "consoleOptions": ["curator"]
+    "consoleOptions": ["curator"],
+    "dockerRepositoryName": "gcr.io/r8me",
+    "dockerPushCommand": "docker push",
+    "kubernetesNamespace": "userr8me",
+    "kubernetesServiceType": "LoadBalancer",
+    "ingressDomain": "",
+    "istio": false
   }
 }
