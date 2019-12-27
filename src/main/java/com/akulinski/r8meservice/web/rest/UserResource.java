@@ -2,6 +2,9 @@ package com.akulinski.r8meservice.web.rest;
 
 import com.akulinski.r8meservice.config.Constants;
 import com.akulinski.r8meservice.domain.User;
+import com.akulinski.r8meservice.repository.CommentXProfileRepository;
+import com.akulinski.r8meservice.repository.FollowerXFollowedRepository;
+import com.akulinski.r8meservice.repository.UserProfileRepository;
 import com.akulinski.r8meservice.repository.UserRepository;
 import com.akulinski.r8meservice.repository.search.UserSearchRepository;
 import com.akulinski.r8meservice.security.AuthoritiesConstants;
@@ -12,12 +15,10 @@ import com.akulinski.r8meservice.service.dto.UserDTO;
 import com.akulinski.r8meservice.web.rest.errors.BadRequestAlertException;
 import com.akulinski.r8meservice.web.rest.errors.EmailAlreadyUsedException;
 import com.akulinski.r8meservice.web.rest.errors.LoginAlreadyUsedException;
-
 import com.akulinski.r8meservice.web.rest.vm.UserProfileVM;
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,11 +34,12 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 /**
  * REST controller for managing users.
@@ -76,14 +78,24 @@ public class UserResource {
 
     private final UserRepository userRepository;
 
+    private final UserProfileRepository userProfileRepository;
+
+    private final FollowerXFollowedRepository followerXFollowedRepository;
+
+    private final CommentXProfileRepository commentXProfileRepository;
+
     private final MailService mailService;
 
     private final UserSearchRepository userSearchRepository;
 
-    public UserResource(UserService userService, UserRepository userRepository, MailService mailService, UserSearchRepository userSearchRepository) {
+    public UserResource(UserService userService, UserRepository userRepository, UserProfileRepository userProfileRepository,
+                        FollowerXFollowedRepository followerXFollowedRepository, CommentXProfileRepository commentXProfileRepository, MailService mailService, UserSearchRepository userSearchRepository) {
 
         this.userService = userService;
         this.userRepository = userRepository;
+        this.userProfileRepository = userProfileRepository;
+        this.followerXFollowedRepository = followerXFollowedRepository;
+        this.commentXProfileRepository = commentXProfileRepository;
         this.mailService = mailService;
         this.userSearchRepository = userSearchRepository;
     }
@@ -97,7 +109,7 @@ public class UserResource {
      *
      * @param userDTO the user to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the login or email is already in use.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     * @throws URISyntaxException       if the Location URI syntax is incorrect.
      * @throws BadRequestAlertException {@code 400 (Bad Request)} if the login or email is already in use.
      */
     @PostMapping("/users")
@@ -116,7 +128,7 @@ public class UserResource {
             User newUser = userService.createUser(userDTO);
             mailService.sendCreationEmail(newUser);
             return ResponseEntity.created(new URI("/api/users/" + newUser.getLogin()))
-                .headers(HeaderUtil.createAlert(applicationName,  "A user is created with identifier " + newUser.getLogin(), newUser.getLogin()))
+                .headers(HeaderUtil.createAlert(applicationName, "A user is created with identifier " + newUser.getLogin(), newUser.getLogin()))
                 .body(newUser);
         }
     }
@@ -163,6 +175,7 @@ public class UserResource {
 
     /**
      * Gets a list of all roles.
+     *
      * @return a string list of all roles.
      */
     @GetMapping("/users/authorities")
@@ -197,7 +210,7 @@ public class UserResource {
     public ResponseEntity<Void> deleteUser(@PathVariable String login) {
         log.debug("REST request to delete User: {}", login);
         userService.deleteUser(login);
-        return ResponseEntity.noContent().headers(HeaderUtil.createAlert(applicationName,  "A user is deleted with identifier " + login, login)).build();
+        return ResponseEntity.noContent().headers(HeaderUtil.createAlert(applicationName, "A user is deleted with identifier " + login, login)).build();
     }
 
     /**
@@ -213,8 +226,18 @@ public class UserResource {
             .collect(Collectors.toList());
     }
 
+
     @GetMapping("/user")
-    public ResponseEntity<UserProfileVM> getCurrentUser(){
-        return ResponseEntity.ok(userService.getUserProfileVM());
+    public ResponseEntity<UserProfileVM> getCurrentUser() {
+        return ResponseEntity.ok(getUserProfileVM());
+    }
+
+
+    private UserProfileVM getUserProfileVM() {
+        final var currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new IllegalStateException("No login found"));
+        final var currentUser = userRepository.findOneByLogin(currentLogin).orElseThrow(() -> new IllegalStateException(String.format("User not found with login: %s", currentLogin)));
+        final var profile = userProfileRepository.findByUser(currentUser).orElseThrow(() -> new IllegalStateException(String.format("No profile is connected to user: %s", currentLogin)));
+
+        return new UserProfileVM(currentLogin, profile.getCurrentRating(), currentUser.getImageUrl(), followerXFollowedRepository.findAllByFollowed(profile).size(), commentXProfileRepository.findAllByReceiver(profile).size());
     }
 }

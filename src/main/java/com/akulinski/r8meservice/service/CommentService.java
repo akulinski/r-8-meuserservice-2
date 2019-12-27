@@ -99,22 +99,6 @@ public class CommentService {
     }
 
     /**
-     *
-     * @return the list of entities.
-     */
-    @Transactional(readOnly = true)
-    public List<CommentVM> findAllByReceiver(UserProfile receiver) {
-        log.debug("Request to get all Comments");
-        return commentXProfileRepository.findAllByReceiver(receiver).stream()
-            .map(commentXProfile ->
-                 new CommentVM(commentXProfile.getComment().getComment(), commentXProfile.getPoster().getUser().getLogin(),
-                     commentXProfile.getPoster().getUser().getImageUrl(), commentXProfile.getComment().getTimeStamp())
-            )
-            .collect(Collectors.toCollection(LinkedList::new));
-    }
-
-
-    /**
     *  Get all the comments where CommentXProfile is {@code null}.
      *  @return the list of entities.
      */

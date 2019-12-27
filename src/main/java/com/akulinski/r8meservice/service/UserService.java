@@ -362,14 +362,6 @@ public class UserService {
             });
     }
 
-    public UserProfileVM  getUserProfileVM(){
-        final var currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new IllegalStateException("No login found"));
-        final var currentUser = userRepository.findOneByLogin(currentLogin).orElseThrow(() -> new IllegalStateException(String.format("User not found with login: %s", currentLogin)));
-        final var profile = userProfileRepository.findByUser(currentUser).orElseThrow(() -> new IllegalStateException(String.format("No profile is connected to user: %s", currentLogin)));;
-
-        return new UserProfileVM(currentLogin, profile.getCurrentRating(), currentUser.getImageUrl(),followerXFollowedRepository.findAllByFollowed(profile).size(), commentXProfileRepository.findAllByReceiver(profile).size());
-    }
-
     /**
      * Gets a list of all the authorities.
      *

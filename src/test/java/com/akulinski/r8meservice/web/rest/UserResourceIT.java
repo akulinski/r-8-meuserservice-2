@@ -4,6 +4,9 @@ import com.akulinski.r8meservice.RedisTestContainerExtension;
 import com.akulinski.r8meservice.R8Meuserservice2App;
 import com.akulinski.r8meservice.domain.Authority;
 import com.akulinski.r8meservice.domain.User;
+import com.akulinski.r8meservice.repository.CommentXProfileRepository;
+import com.akulinski.r8meservice.repository.FollowerXFollowedRepository;
+import com.akulinski.r8meservice.repository.UserProfileRepository;
 import com.akulinski.r8meservice.repository.UserRepository;
 import com.akulinski.r8meservice.repository.search.UserSearchRepository;
 import com.akulinski.r8meservice.security.AuthoritiesConstants;
@@ -106,11 +109,20 @@ public class UserResourceIT {
 
     private User user;
 
+    @Autowired
+    private UserProfileRepository userProfileRepository;
+
+    @Autowired
+    private FollowerXFollowedRepository followerXFollowedRepository;
+
+    @Autowired
+    private CommentXProfileRepository commentXProfileRepository;
+
     @BeforeEach
     public void setup() {
         cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).clear();
         cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).clear();
-        UserResource userResource = new UserResource(userService, userRepository, mailService, mockUserSearchRepository);
+        UserResource userResource = new UserResource(userService, userRepository, userProfileRepository, followerXFollowedRepository, commentXProfileRepository, mailService, mockUserSearchRepository);
 
         this.restUserMockMvc = MockMvcBuilders.standaloneSetup(userResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
