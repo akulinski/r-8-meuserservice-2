@@ -2,6 +2,7 @@ package com.akulinski.r8meservice.config;
 
 import com.akulinski.r8meservice.domain.*;
 import com.akulinski.r8meservice.repository.*;
+import com.akulinski.r8meservice.repository.search.*;
 import com.akulinski.r8meservice.service.UserService;
 import com.akulinski.r8meservice.service.dto.UserDTO;
 import com.akulinski.r8meservice.service.util.RandomUtil;
@@ -18,22 +19,43 @@ import java.util.Set;
 public class FakerConfig {
     private final Faker faker;
     private final UserRepository userRepository;
+    private final UserSearchRepository userSearchRepository;
+
     private final UserProfileRepository userProfileRepository;
+    private final UserProfileSearchRepository userProfileSearchRepository;
+
+
     private final CommentRepository commentRepository;
+    private final CommentSearchRepository commentSearchRepository;
+
     private final CommentXProfileRepository commentXProfileRepository;
+    private final CommentXProfileSearchRepository commentXProfileSearchRepository;
+
+
     private final RateRepository rateRepository;
+    private final RateSearchRepository rateSearchRepository;
+
     private final RateXProfileRepository rateXProfileRepository;
+    private final RateXProfileSearchRepository rateXProfileSearchRepository;
+
+
     private final UserService userService;
     private final Random random;
 
-    public FakerConfig(UserRepository userRepository, UserProfileRepository userProfileRepository, CommentRepository commentRepository,
-                       CommentXProfileRepository commentXProfileRepository, RateRepository rateRepository, RateXProfileRepository rateXProfileRepository, UserService userService) {
+    public FakerConfig(UserRepository userRepository, UserSearchRepository userSearchRepository, UserProfileRepository userProfileRepository, UserProfileSearchRepository userProfileSearchRepository, CommentRepository commentRepository,
+                       CommentSearchRepository commentSearchRepository, CommentXProfileRepository commentXProfileRepository, CommentXProfileSearchRepository commentXProfileSearchRepository, RateRepository rateRepository, RateSearchRepository rateSearchRepository, RateXProfileRepository rateXProfileRepository, RateXProfileSearchRepository rateXProfileSearchRepository, UserService userService) {
         this.userRepository = userRepository;
+        this.userSearchRepository = userSearchRepository;
         this.userProfileRepository = userProfileRepository;
+        this.userProfileSearchRepository = userProfileSearchRepository;
         this.commentRepository = commentRepository;
+        this.commentSearchRepository = commentSearchRepository;
         this.commentXProfileRepository = commentXProfileRepository;
+        this.commentXProfileSearchRepository = commentXProfileSearchRepository;
         this.rateRepository = rateRepository;
+        this.rateSearchRepository = rateSearchRepository;
         this.rateXProfileRepository = rateXProfileRepository;
+        this.rateXProfileSearchRepository = rateXProfileSearchRepository;
         this.userService = userService;
         this.random = new Random();
         this.faker = new Faker();
@@ -53,6 +75,7 @@ public class FakerConfig {
 
                 UserProfile userProfile = getUserProfile(user);
                 userProfileRepository.save(userProfile);
+                userProfileSearchRepository.save(userProfile);
 
                 for(int j=0; j<10; j++){
                     try {
@@ -71,12 +94,15 @@ public class FakerConfig {
         rate.setQuestion(faker.witcher().location());
         rate.setValue(faker.random().nextDouble());
         rate = rateRepository.save(rate);
+        rateSearchRepository.save(rate);
 
         RateXProfile rateXProfile = new RateXProfile();
         rateXProfile.setRated(userProfile);
         rateXProfile.setRater(userProfileRepository.findByUser(users.get(random.nextInt(users.size()-1))).orElse(null));
         rateXProfile.setRate(rate);
         rateXProfileRepository.save(rateXProfile);
+        rateXProfileSearchRepository.save(rateXProfile);
+
     }
 
     private void setUpComment(List<User> users, UserProfile userProfile) {
@@ -84,12 +110,14 @@ public class FakerConfig {
         comment.setComment(faker.witcher().quote());
 
         comment = commentRepository.save(comment);
+        commentSearchRepository.save(comment);
 
         CommentXProfile commentXProfile = new CommentXProfile();
         commentXProfile.setReceiver(userProfile);
         commentXProfile.setPoster(userProfileRepository.findByUser(users.get(random.nextInt(users.size()-1))).orElse(null));
         commentXProfile.setComment(comment);
         commentXProfileRepository.save(commentXProfile);
+        commentXProfileSearchRepository.save(commentXProfile);
     }
 
     private UserProfile getUserProfile(User user) {
