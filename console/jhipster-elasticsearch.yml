@@ -416,7 +416,7 @@ spec:
           resources:
             requests:
               memory: '256Mi'
-              cpu: '1508m'
+              cpu: '200m'
             limits:
               memory: '1024Mi'
               cpu: '400m'

@@ -1,4 +1,4 @@
-# JHipster-generated Kubernetes configuration
+# Kubernetes configuration
 
 ## Preparation
 
@@ -22,7 +22,7 @@ You can deploy all your apps by running the below bash command:
 Use these commands to find your application's IP addresses:
 
 ```
-$ kubectl get svc r8meuserservice2 -n userr8me
+$ kubectl get svc default -n userr8me
 ```
 
 ## Scaling your deployments
@@ -45,12 +45,10 @@ Using livenessProbes and readinessProbe allow you to tell Kubernetes about the s
 
 ## Monitoring tools
 
-### JHipster console
-
 Your application logs can be found in JHipster console (powered by Kibana). You can find its service details by
 
 ```
-$ kubectl get svc jhipster-console -n userr8me
+$ kubectl get svc jhipster-console
 ```
 
 - If you have chosen _Ingress_, then you should be able to access Kibana using the given ingress domain.
@@ -62,19 +60,19 @@ $ kubectl get svc jhipster-console -n userr8me
 The registry is deployed using a headless service in kubernetes, so the primary service has no IP address, and cannot get a node port. You can create a secondary service for any type, using:
 
 ```
-$ kubectl expose service jhipster-registry --type=NodePort --name=exposed-registry -n userr8me
+$ kubectl expose service jhipster-registry --type=NodePort --name=exposed-registry
 ```
 
 and explore the details using
 
 ```
-$ kubectl get svc exposed-registry -n userr8me
+$ kubectl get svc exposed-registry
 ```
 
 For scaling the JHipster registry, use
 
 ```
-$ kubectl scale statefulset jhipster-registry --replicas 3 -n userr8me
+$ kubectl scale statefulset jhipster-registry --replicas 3
 ```
 
 ## Troubleshooting

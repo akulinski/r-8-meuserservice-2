@@ -8,14 +8,12 @@ import com.akulinski.r8meservice.service.util.RandomUtil;
 import com.github.javafaker.Faker;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-@Profile("dev")
 @Configuration
 public class FakerConfig {
     private final Faker faker;
