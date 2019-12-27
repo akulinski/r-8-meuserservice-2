@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: r8meuserservice2-postgresql
-  namespace: userr8me
+  namespace: default
   labels:
     app: r8meuserservice2-postgresql
 type: Opaque
@@ -13,7 +13,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: r8meuserservice2-postgresql
-  namespace: userr8me
+  namespace: default
 spec:
   replicas: 1
   selector:
@@ -31,13 +31,12 @@ spec:
         - name: postgres
           image: postgres:11.5
           env:
-            - name: POSTGRES_USER
+            - name: POSTGRES_DB
               value: r8meuserservice2
+            - name: POSTGRES_USER
+              value: r8me
             - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: r8meuserservice2-postgresql
-                  key: postgresql-password
+              value: password
           ports:
             - containerPort: 5432
           volumeMounts:
@@ -48,7 +47,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: r8meuserservice2-postgresql
-  namespace: userr8me
+  namespace: default
 spec:
   selector:
     app: r8meuserservice2-postgresql

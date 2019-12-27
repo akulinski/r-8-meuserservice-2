@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: r8meuserservice2-redis
+  labels:
+    app: r8meuserservice2
+spec:
+  ports:
+    - port: 6379
+  selector:
+    app: r8meuserservice2-redis
+    tier: r8meuserservice2
+  clusterIP: None
+
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: r8meuserservice2-redis
+  labels:
+    app: r8meuserservice2
+spec:
+  selector:
+    matchLabels:
+      app: r8meuserservice2-redis
+      tier: r8meuserservice2
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: r8meuserservice2-redis
+        tier: r8meuserservice2
+    spec:
+      containers:
+        - image: bitnami/redis:latest
+          name: r8meuserservice2-redis
+          env:
+            - name: ALLOW_EMPTY_PASSWORD
+              value: "yes"
+
+          ports:
+            - containerPort: 6379
+              name: redis

@@ -16,7 +16,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: registry-secret
-  namespace: userr8me
+  namespace: default
 type: Opaque
 data:
   registry-admin-password: YWRtaW4= # base64 encoded "admin"
@@ -25,7 +25,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: jhipster-registry
-  namespace: userr8me
+  namespace: default
   labels:
     app: jhipster-registry
   annotations:
@@ -42,7 +42,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: jhipster-registry
-  namespace: userr8me
+  namespace: default
 spec:
   serviceName: jhipster-registry
   replicas: 2

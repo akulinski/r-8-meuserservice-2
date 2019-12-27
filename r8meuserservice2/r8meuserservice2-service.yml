@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: r8meuserservice2
-  namespace: userr8me
+  namespace: default
   labels:
     app: r8meuserservice2
 spec:
