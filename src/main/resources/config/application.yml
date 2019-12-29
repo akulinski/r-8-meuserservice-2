@@ -187,5 +187,5 @@ kafka:
 # ===================================================================
 
 # application:
-scheduler:
-  profilecalc: 1000
+scheduling:
+  enabled: true

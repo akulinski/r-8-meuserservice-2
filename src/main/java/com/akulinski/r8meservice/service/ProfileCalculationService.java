@@ -5,11 +5,13 @@ import com.akulinski.r8meservice.repository.UserProfileRepository;
 import com.akulinski.r8meservice.repository.search.UserProfileSearchRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@ConditionalOnProperty(value = "scheduling.enabled", havingValue = "true", matchIfMissing = false)
 public class ProfileCalculationService {
     private final Logger log = LoggerFactory.getLogger(ProfileCalculationService.class);
 

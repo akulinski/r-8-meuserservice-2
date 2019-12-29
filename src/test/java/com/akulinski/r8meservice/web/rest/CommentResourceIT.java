@@ -19,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -131,6 +132,7 @@ public class CommentResourceIT {
 
     @Test
     @Transactional
+    @WithMockUser
     public void createComment() throws Exception {
         int databaseSizeBeforeCreate = commentRepository.findAll().size();
 
@@ -190,7 +192,7 @@ public class CommentResourceIT {
             .andExpect(jsonPath("$.[*].comment").value(hasItem(DEFAULT_COMMENT)))
             .andExpect(jsonPath("$.[*].timeStamp").value(hasItem(DEFAULT_TIME_STAMP.toString())));
     }
-    
+
     @Test
     @Transactional
     public void getComment() throws Exception {
@@ -216,6 +218,7 @@ public class CommentResourceIT {
 
     @Test
     @Transactional
+    @WithMockUser
     public void updateComment() throws Exception {
         // Initialize the database
         commentRepository.saveAndFlush(comment);

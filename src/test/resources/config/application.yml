@@ -23,6 +23,7 @@ eureka:
 spring:
   application:
     name: r8meuserservice2
+
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     url: jdbc:h2:mem:r8meuserservice2;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
@@ -138,3 +139,5 @@ kafka:
 # ===================================================================
 
 # application:
+scheduler:
+  profilecalc: 1000

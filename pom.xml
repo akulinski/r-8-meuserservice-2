@@ -820,8 +820,13 @@
                     <version>${maven-surefire-plugin.version}</version>
                     <configuration>
                         <!-- Force alphabetical order to have a reproducible build -->
+                        <forkCount>1</forkCount>
+                        <reuseForks>false</reuseForks>
+                        <threadCount>1</threadCount>
                         <runOrder>alphabetical</runOrder>
                         <reportsDirectory>${junit.utReportFolder}</reportsDirectory>
+                        <argLine>-XX:MaxPermSize=600M</argLine>
+                        <argLine>-Xmx2048m</argLine>
                         <excludes>
                             <exclude>**/*IT*</exclude>
                             <exclude>**/*IntTest*</exclude>

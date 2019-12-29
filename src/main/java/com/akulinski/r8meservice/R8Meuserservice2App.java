@@ -27,7 +27,7 @@ import java.util.Collection;
 @SpringBootApplication
 @EnableConfigurationProperties({LiquibaseProperties.class, ApplicationProperties.class})
 @EnableDiscoveryClient
-public class R8Meuserservice2App implements InitializingBean {
+public class  R8Meuserservice2App implements InitializingBean {
 
     private static final Logger log = LoggerFactory.getLogger(R8Meuserservice2App.class);
 
