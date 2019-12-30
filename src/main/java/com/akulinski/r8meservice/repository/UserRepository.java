@@ -1,18 +1,22 @@
 package com.akulinski.r8meservice.repository;
 
 import com.akulinski.r8meservice.domain.User;
-
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.QueryHint;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.time.Instant;
+import java.util.stream.Stream;
+
+import static org.hibernate.jpa.QueryHints.HINT_FETCH_SIZE;
 
 /**
  * Spring Data JPA repository for the {@link User} entity.
@@ -46,4 +50,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findOneWithAuthoritiesByEmailIgnoreCase(String email);
 
     Page<User> findAllByLoginNot(Pageable pageable, String login);
+
+    @QueryHints(value = @QueryHint(name = HINT_FETCH_SIZE, value = "" + 50))
+    @Query("select usr from User usr")
+    Stream<User> findAllStream();
 }

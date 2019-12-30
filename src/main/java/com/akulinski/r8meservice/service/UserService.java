@@ -12,7 +12,6 @@ import com.akulinski.r8meservice.security.SecurityUtils;
 import com.akulinski.r8meservice.service.dto.SignUpAndroidDTO;
 import com.akulinski.r8meservice.service.dto.UserDTO;
 import com.akulinski.r8meservice.service.util.RandomUtil;
-import com.akulinski.r8meservice.web.rest.vm.UserProfileVM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;

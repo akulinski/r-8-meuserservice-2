@@ -2,10 +2,12 @@ package com.akulinski.r8meservice.web.rest;
 
 import com.akulinski.r8meservice.config.Constants;
 import com.akulinski.r8meservice.domain.User;
+import com.akulinski.r8meservice.domain.UserProfile;
 import com.akulinski.r8meservice.repository.CommentXProfileRepository;
 import com.akulinski.r8meservice.repository.FollowerXFollowedRepository;
 import com.akulinski.r8meservice.repository.UserProfileRepository;
 import com.akulinski.r8meservice.repository.UserRepository;
+import com.akulinski.r8meservice.repository.search.UserProfileSearchRepository;
 import com.akulinski.r8meservice.repository.search.UserSearchRepository;
 import com.akulinski.r8meservice.security.AuthoritiesConstants;
 import com.akulinski.r8meservice.security.SecurityUtils;
@@ -16,14 +18,23 @@ import com.akulinski.r8meservice.web.rest.errors.BadRequestAlertException;
 import com.akulinski.r8meservice.web.rest.errors.EmailAlreadyUsedException;
 import com.akulinski.r8meservice.web.rest.errors.LoginAlreadyUsedException;
 import com.akulinski.r8meservice.web.rest.vm.UserProfileVM;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
+import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,8 +49,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 /**
  * REST controller for managing users.
@@ -84,18 +93,21 @@ public class UserResource {
 
     private final CommentXProfileRepository commentXProfileRepository;
 
+    private final UserProfileSearchRepository userProfileSearchRepository;
+
     private final MailService mailService;
 
     private final UserSearchRepository userSearchRepository;
 
     public UserResource(UserService userService, UserRepository userRepository, UserProfileRepository userProfileRepository,
-                        FollowerXFollowedRepository followerXFollowedRepository, CommentXProfileRepository commentXProfileRepository, MailService mailService, UserSearchRepository userSearchRepository) {
+                        FollowerXFollowedRepository followerXFollowedRepository, CommentXProfileRepository commentXProfileRepository, UserProfileSearchRepository userProfileSearchRepository, MailService mailService, UserSearchRepository userSearchRepository) {
 
         this.userService = userService;
         this.userRepository = userRepository;
         this.userProfileRepository = userProfileRepository;
         this.followerXFollowedRepository = followerXFollowedRepository;
         this.commentXProfileRepository = commentXProfileRepository;
+        this.userProfileSearchRepository = userProfileSearchRepository;
         this.mailService = mailService;
         this.userSearchRepository = userSearchRepository;
     }
@@ -220,18 +232,40 @@ public class UserResource {
      * @return the result of the search.
      */
     @GetMapping("/_search/users/{query}")
-    public List<User> search(@PathVariable String query) {
+    public List<UserProfileVM> search(@PathVariable String query) {
+        var byLogin = userSearchRepository.findByLoginFuzzy(query);
+
+        if (byLogin.size() < 5) {
+            Iterable<User> combinedIterables = Iterables.unmodifiableIterable(
+                Iterables.concat(userSearchRepository.findByLoginFuzzy(query), userSearchRepository.findByRegex(query)));
+            byLogin = Lists.newArrayList(combinedIterables);
+        }
+
         return StreamSupport
-            .stream(userSearchRepository.search(queryStringQuery(query)).spliterator(), false)
+            .stream(byLogin.spliterator(), false)
+            .distinct()
+            .map(user -> getUserProfileVM(user))
             .collect(Collectors.toList());
     }
-
 
     @GetMapping("/user")
     public ResponseEntity<UserProfileVM> getCurrentUser() {
         return ResponseEntity.ok(getUserProfileVM());
     }
 
+    private UserProfileVM getUserProfileVM(User user) {
+        final var currentUser = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalStateException(String.format("User not found with id: %s", user.getId())));
+
+        final var profile = userProfileRepository.findByUser(currentUser).orElseGet(() -> {
+            UserProfile userProfile = new UserProfile();
+            userProfile.setUser(currentUser);
+            userProfileRepository.save(userProfile);
+            userProfileSearchRepository.save(userProfile);
+            return userProfile;
+        });
+
+        return new UserProfileVM(user.getLogin(), profile.getCurrentRating(), currentUser.getImageUrl(), followerXFollowedRepository.findAllByFollowed(profile).size(), commentXProfileRepository.findAllByReceiver(profile).size());
+    }
 
     private UserProfileVM getUserProfileVM() {
         final var currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new IllegalStateException("No login found"));
