@@ -8,6 +8,7 @@ import com.akulinski.r8meservice.repository.CommentXProfileRepository;
 import com.akulinski.r8meservice.repository.FollowerXFollowedRepository;
 import com.akulinski.r8meservice.repository.UserProfileRepository;
 import com.akulinski.r8meservice.repository.UserRepository;
+import com.akulinski.r8meservice.repository.search.UserProfileSearchRepository;
 import com.akulinski.r8meservice.repository.search.UserSearchRepository;
 import com.akulinski.r8meservice.security.AuthoritiesConstants;
 import com.akulinski.r8meservice.service.MailService;
@@ -113,6 +114,9 @@ public class UserResourceIT {
     private UserProfileRepository userProfileRepository;
 
     @Autowired
+    private UserProfileSearchRepository userProfileSearchRepository;
+
+    @Autowired
     private FollowerXFollowedRepository followerXFollowedRepository;
 
     @Autowired
@@ -122,7 +126,7 @@ public class UserResourceIT {
     public void setup() {
         cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).clear();
         cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).clear();
-        UserResource userResource = new UserResource(userService, userRepository, userProfileRepository, followerXFollowedRepository, commentXProfileRepository, mailService, mockUserSearchRepository);
+        UserResource userResource = new UserResource(userService, userRepository, userProfileRepository, followerXFollowedRepository, commentXProfileRepository, userProfileSearchRepository, mailService, mockUserSearchRepository);
 
         this.restUserMockMvc = MockMvcBuilders.standaloneSetup(userResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
