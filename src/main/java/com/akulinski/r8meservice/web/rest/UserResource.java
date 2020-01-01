@@ -277,15 +277,25 @@ public class UserResource {
 
     @PostMapping("/user/upload-photo")
     public ResponseEntity uploadPhoto(@RequestParam("photo") MultipartFile multipartFile) {
-        final var username = SecurityUtils.getCurrentUserLogin().orElseThrow(()->new IllegalStateException("No Username provided"));
-        final var user = userRepository.findOneByLogin(username).orElseThrow(() -> new UsernameNotFoundException(username));
+        final User user = getUserFromContext();
         final var link = photoStorageService.storeProfilePicture(multipartFile, user);
 
-        if(StringUtils.isNotEmpty(link)) {
+        if (StringUtils.isNotEmpty(link)) {
             return ResponseEntity.created(URI.create(link)).build();
-        }else{
+        } else {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    private User getUserFromContext() {
+        final var username = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new IllegalStateException("No Username provided"));
+        return userRepository.findOneByLogin(username).orElseThrow(() -> new UsernameNotFoundException(username));
+    }
+
+    @GetMapping("user/get-avatar")
+    public ResponseEntity getAvatar() {
+        final User user = getUserFromContext();
+        return ResponseEntity.ok(photoStorageService.getLinkForUser(user));
     }
 
     private UserProfileVM getUserProfileVM() {
