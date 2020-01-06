@@ -14,10 +14,10 @@ public class CommentXProfileMapperTest {
         commentXProfileMapper = new CommentXProfileMapperImpl();
     }
 
-    @Test
+    /*@Test
     public void testEntityFromId() {
         Long id = 2L;
         assertThat(commentXProfileMapper.fromId(id).getId()).isEqualTo(id);
         assertThat(commentXProfileMapper.fromId(null)).isNull();
-    }
+    }*/
 }

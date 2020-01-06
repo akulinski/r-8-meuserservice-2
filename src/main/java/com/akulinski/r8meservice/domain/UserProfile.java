@@ -1,11 +1,14 @@
 package com.akulinski.r8meservice.domain;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 
 import org.springframework.data.elasticsearch.annotations.FieldType;
+
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * A UserProfile.
@@ -30,6 +33,12 @@ public class UserProfile implements Serializable {
     @OneToOne
     @JoinColumn(unique = true)
     private User user;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "receiver")
+    private Set<CommentXProfile> received;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "poster")
+    private Set<CommentXProfile> posted;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
@@ -60,6 +69,26 @@ public class UserProfile implements Serializable {
     public UserProfile user(User user) {
         this.user = user;
         return this;
+    }
+
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
+
+    public Set<CommentXProfile> getReceived() {
+        return received;
+    }
+
+    public void setReceived(Set<CommentXProfile> received) {
+        this.received = received;
+    }
+
+    public Set<CommentXProfile> getPosted() {
+        return posted;
+    }
+
+    public void setPosted(Set<CommentXProfile> posted) {
+        this.posted = posted;
     }
 
     public void setUser(User user) {

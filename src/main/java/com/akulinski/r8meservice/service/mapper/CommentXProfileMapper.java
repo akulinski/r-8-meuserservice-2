@@ -26,7 +26,6 @@ public interface CommentXProfileMapper extends EntityMapper<CommentXProfileDTO, 
             return null;
         }
         CommentXProfile commentXProfile = new CommentXProfile();
-        commentXProfile.setId(id);
         return commentXProfile;
     }
 }

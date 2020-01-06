@@ -2,16 +2,15 @@ package com.akulinski.r8meservice.service;
 
 import com.akulinski.r8meservice.domain.Comment;
 import com.akulinski.r8meservice.domain.CommentXProfile;
-import com.akulinski.r8meservice.domain.UserProfile;
 import com.akulinski.r8meservice.repository.CommentRepository;
 import com.akulinski.r8meservice.repository.CommentXProfileRepository;
 import com.akulinski.r8meservice.repository.UserProfileRepository;
+import com.akulinski.r8meservice.repository.UserRepository;
 import com.akulinski.r8meservice.repository.search.CommentSearchRepository;
-import com.akulinski.r8meservice.repository.search.CommentXProfileSearchRepository;
 import com.akulinski.r8meservice.security.SecurityUtils;
 import com.akulinski.r8meservice.service.dto.CommentDTO;
 import com.akulinski.r8meservice.service.mapper.CommentMapper;
-import com.akulinski.r8meservice.web.rest.vm.CommentVM;
+import com.google.cloud.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +18,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -44,17 +44,18 @@ public class CommentService {
 
     private final CommentXProfileRepository commentXProfileRepository;
 
-    private final CommentXProfileSearchRepository commentXProfileSearchRepository;
-
     private final UserProfileRepository userProfileRepository;
 
-    public CommentService(CommentRepository commentRepository, CommentMapper commentMapper, CommentSearchRepository commentSearchRepository, CommentXProfileRepository commentXProfileRepository, CommentXProfileSearchRepository commentXProfileSearchRepository, UserProfileRepository userProfileRepository) {
+    private final UserRepository userRepository;
+
+
+    public CommentService(CommentRepository commentRepository, CommentMapper commentMapper, CommentSearchRepository commentSearchRepository, UserProfileRepository userProfileRepository, UserRepository userRepository, CommentXProfileRepository commentXProfileRepository) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
         this.commentSearchRepository = commentSearchRepository;
         this.commentXProfileRepository = commentXProfileRepository;
-        this.commentXProfileSearchRepository = commentXProfileSearchRepository;
         this.userProfileRepository = userProfileRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -66,7 +67,7 @@ public class CommentService {
     public CommentDTO save(CommentDTO commentDTO) {
         final var poster = userProfileRepository.findByUser_Login(commentDTO.getReceiver()).orElseThrow(() -> new UsernameNotFoundException(commentDTO.getReceiver()));
         final var receiver = userProfileRepository.findByUser_Login(SecurityUtils.getCurrentUserLogin()
-            .orElseThrow(()->new IllegalStateException("Username not present")))
+            .orElseThrow(() -> new IllegalStateException("Username not present")))
             .orElseThrow(() -> new UsernameNotFoundException(commentDTO.getReceiver()));
 
         log.debug("Request to save Comment : {}", commentDTO);
@@ -80,8 +81,6 @@ public class CommentService {
         commentXProfile.setPoster(poster);
         commentXProfile.setReceiver(receiver);
         commentXProfileRepository.save(commentXProfile);
-        commentXProfileSearchRepository.save(commentXProfile);
-
         return result;
     }
 
@@ -98,19 +97,6 @@ public class CommentService {
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    /**
-    *  Get all the comments where CommentXProfile is {@code null}.
-     *  @return the list of entities.
-     */
-    @Transactional(readOnly = true)
-    public List<CommentDTO> findAllWhereCommentXProfileIsNull() {
-        log.debug("Request to get all comments where CommentXProfile is null");
-        return StreamSupport
-            .stream(commentRepository.findAll().spliterator(), false)
-            .filter(comment -> comment.getCommentXProfile() == null)
-            .map(commentMapper::toDto)
-            .collect(Collectors.toCollection(LinkedList::new));
-    }
 
     /**
      * Get one comment by id.
@@ -149,5 +135,34 @@ public class CommentService {
             .stream(commentSearchRepository.search(queryStringQuery(query)).spliterator(), false)
             .map(commentMapper::toDto)
             .collect(Collectors.toList());
+    }
+
+    public List<CommentDTO> findCommentsForUser() {
+        final var username = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new IllegalStateException("NO username for current user"));
+        final var user = userRepository.findOneByLogin(username).orElseThrow(() -> new IllegalStateException(String.format("No user for username: %s", username)));
+        final var userProfile = userProfileRepository.findByUser(user).orElseThrow(()->new IllegalStateException(String.format("No profile connected to user: %s", username)));
+
+        log.debug("Request to find all comments for user {}", username);
+
+        List<CommentXProfile> allByReceiver = commentXProfileRepository.findAllByReceiver(userProfile);
+
+        return  allByReceiver.stream().map(commentXProfile -> {
+            final var commentDTO = new CommentDTO();
+            try {
+                final var comment = commentRepository.findByCommentXProfile(commentXProfile)
+                    .orElseThrow(() -> new IllegalStateException(String.format("No comment connected to commentXProfile, DB inconsistency detected for: %s", commentXProfile.toString())));
+
+                commentDTO.setId(comment.getId());
+                commentDTO.setReceiver(commentXProfile.getReceiver().getUser().getLogin());
+                commentDTO.setCommenter(commentXProfile.getPoster().getUser().getLogin());
+                commentDTO.setComment(comment.getComment());
+                commentDTO.setTimeStamp(comment.getTimeStamp());
+                return commentDTO;
+            }catch (RuntimeException ex){
+                log.warn(ex.getLocalizedMessage());
+            }
+            commentDTO.setTimeStamp(Instant.now());
+            return commentDTO;
+        }).sorted().collect(Collectors.toList());
     }
 }

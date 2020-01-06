@@ -1,4 +1,6 @@
 package com.akulinski.r8meservice.service.dto;
+
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.io.Serializable;
 import java.util.Objects;
@@ -6,7 +8,7 @@ import java.util.Objects;
 /**
  * A DTO for the {@link com.akulinski.r8meservice.domain.Comment} entity.
  */
-public class CommentDTO implements Serializable {
+public class CommentDTO implements Serializable, Comparable {
 
     private Long id;
 
@@ -15,6 +17,8 @@ public class CommentDTO implements Serializable {
     private Instant timeStamp;
 
     private String receiver;
+
+    private String commenter;
 
     public Long getId() {
         return id;
@@ -40,22 +44,6 @@ public class CommentDTO implements Serializable {
         this.timeStamp = timeStamp;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        CommentDTO commentDTO = (CommentDTO) o;
-        if (commentDTO.getId() == null || getId() == null) {
-            return false;
-        }
-        return Objects.equals(getId(), commentDTO.getId());
-    }
-
     public String getReceiver() {
         return receiver;
     }
@@ -64,17 +52,44 @@ public class CommentDTO implements Serializable {
         this.receiver = receiver;
     }
 
+    public String getCommenter() {
+        return commenter;
+    }
+
+    public void setCommenter(String commenter) {
+        this.commenter = commenter;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CommentDTO)) return false;
+        CommentDTO that = (CommentDTO) o;
+        return Objects.equals(getId(), that.getId()) &&
+            Objects.equals(getComment(), that.getComment()) &&
+            Objects.equals(getTimeStamp(), that.getTimeStamp()) &&
+            Objects.equals(getReceiver(), that.getReceiver()) &&
+            Objects.equals(getCommenter(), that.getCommenter());
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hashCode(getId());
+        return Objects.hash(getId(), getComment(), getTimeStamp(), getReceiver(), getCommenter());
     }
 
     @Override
     public String toString() {
         return "CommentDTO{" +
-            "id=" + getId() +
-            ", comment='" + getComment() + "'" +
-            ", timeStamp='" + getTimeStamp() + "'" +
-            "}";
+            "id=" + id +
+            ", comment='" + comment + '\'' +
+            ", timeStamp=" + timeStamp +
+            ", receiver='" + receiver + '\'' +
+            ", commenter='" + commenter + '\'' +
+            '}';
+    }
+
+    @Override
+    public int compareTo(@NotNull Object o) {
+        return this.getTimeStamp().compareTo(((CommentDTO) o).getTimeStamp());
     }
 }

@@ -30,9 +30,9 @@ public class Comment implements Serializable {
     private String comment;
 
     @Column(name = "time_stamp")
-    private Instant timeStamp;
+    private Instant timeStamp = Instant.now();
 
-    @OneToOne(mappedBy = "comment")
+    @OneToOne
     @JsonIgnore
     private CommentXProfile commentXProfile;
 

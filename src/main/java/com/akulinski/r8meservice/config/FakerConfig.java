@@ -2,35 +2,36 @@ package com.akulinski.r8meservice.config;
 
 import com.akulinski.r8meservice.domain.*;
 import com.akulinski.r8meservice.repository.*;
-import com.akulinski.r8meservice.repository.search.*;
-import com.akulinski.r8meservice.service.UserService;
-import com.akulinski.r8meservice.service.dto.UserDTO;
-import com.akulinski.r8meservice.service.util.RandomUtil;
+import com.akulinski.r8meservice.repository.search.RateSearchRepository;
+import com.akulinski.r8meservice.repository.search.RateXProfileSearchRepository;
 import com.github.javafaker.Faker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @Configuration
+@Profile("dev")
 public class FakerConfig {
+    private final Logger log = LoggerFactory.getLogger(FakerConfig.class);
+
     private final Faker faker;
     private final UserRepository userRepository;
-    private final UserSearchRepository userSearchRepository;
 
     private final UserProfileRepository userProfileRepository;
-    private final UserProfileSearchRepository userProfileSearchRepository;
 
 
     private final CommentRepository commentRepository;
-    private final CommentSearchRepository commentSearchRepository;
 
     private final CommentXProfileRepository commentXProfileRepository;
-    private final CommentXProfileSearchRepository commentXProfileSearchRepository;
-
 
     private final RateRepository rateRepository;
     private final RateSearchRepository rateSearchRepository;
@@ -39,54 +40,73 @@ public class FakerConfig {
     private final RateXProfileSearchRepository rateXProfileSearchRepository;
 
 
-    private final UserService userService;
     private final Random random;
 
-    public FakerConfig(UserRepository userRepository, UserSearchRepository userSearchRepository, UserProfileRepository userProfileRepository, UserProfileSearchRepository userProfileSearchRepository, CommentRepository commentRepository,
-                       CommentSearchRepository commentSearchRepository, CommentXProfileRepository commentXProfileRepository, CommentXProfileSearchRepository commentXProfileSearchRepository, RateRepository rateRepository, RateSearchRepository rateSearchRepository, RateXProfileRepository rateXProfileRepository, RateXProfileSearchRepository rateXProfileSearchRepository, UserService userService) {
+    @Value("${mock.comments}")
+    private long comments;
+
+    public FakerConfig(UserRepository userRepository, UserProfileRepository userProfileRepository, CommentRepository commentRepository,
+                       CommentXProfileRepository commentXProfileRepository, RateRepository rateRepository, RateSearchRepository rateSearchRepository, RateXProfileRepository rateXProfileRepository, RateXProfileSearchRepository rateXProfileSearchRepository) {
         this.userRepository = userRepository;
-        this.userSearchRepository = userSearchRepository;
         this.userProfileRepository = userProfileRepository;
-        this.userProfileSearchRepository = userProfileSearchRepository;
         this.commentRepository = commentRepository;
-        this.commentSearchRepository = commentSearchRepository;
         this.commentXProfileRepository = commentXProfileRepository;
-        this.commentXProfileSearchRepository = commentXProfileSearchRepository;
         this.rateRepository = rateRepository;
         this.rateSearchRepository = rateSearchRepository;
         this.rateXProfileRepository = rateXProfileRepository;
         this.rateXProfileSearchRepository = rateXProfileSearchRepository;
-        this.userService = userService;
         this.random = new Random();
         this.faker = new Faker();
     }
 
 
     @EventListener(ApplicationReadyEvent.class)
+    @Transactional
     public void mockData() {
-        if (userRepository.count() < 10) {
 
-            for (int i = 0; i < 10; i++) {
 
-                final List<User> users = userRepository.findAll();
+        List<User> emptyProfiles = userRepository.findAll().stream().filter(user -> userProfileRepository.findByUser(user).isEmpty()).collect(Collectors.toList());
 
-                final UserDTO userDTO = getUserDTO();
-                final var user = userService.createUser(userDTO);
-
-                UserProfile userProfile = getUserProfile(user);
-                userProfileRepository.save(userProfile);
-                userProfileSearchRepository.save(userProfile);
-
-                for(int j=0; j<10; j++){
-                    try {
-                        setUpComment(users, userProfile);
-                        setUpRate(users, userProfile);
-                    }catch (Exception ex){
-                        //ignore
-                    }
+        emptyProfiles.forEach(user -> {
+                try {
+                    createUserProfileWithComments(user);
+                } catch (Exception ex) {
+                    log.error(ex.getLocalizedMessage());
                 }
             }
+        );
+    }
+
+    private UserProfile createUserProfileWithComments(User user) {
+        final UserProfile userProfile = createUserProfile(user);
+        final List<User> users = userRepository.findAll();
+
+        for (int j = 0; j < comments; j++) {
+            try {
+                User randomUser = users.get(random.nextInt(users.size() - 1));
+                UserProfile randomProfile = userProfileRepository.findByUser(randomUser).orElse(null);
+
+                while (randomProfile == null) {
+                    randomUser = users.get(random.nextInt(users.size() - 1));
+                    randomProfile = userProfileRepository.findByUser(randomUser).orElse(null);
+
+                }
+
+                setUpComment(randomProfile, userProfile);
+                //setUpRate(users, userProfile);
+            } catch (Exception ex) {
+                log.error(ex.getLocalizedMessage());
+            }
         }
+
+        return userProfile;
+    }
+
+    private UserProfile createUserProfile(User user) {
+        final var userProfile = new UserProfile();
+        userProfile.setUser(user);
+        userProfileRepository.save(userProfile);
+        return userProfile;
     }
 
     private void setUpRate(List<User> users, UserProfile userProfile) {
@@ -98,39 +118,33 @@ public class FakerConfig {
 
         RateXProfile rateXProfile = new RateXProfile();
         rateXProfile.setRated(userProfile);
-        rateXProfile.setRater(userProfileRepository.findByUser(users.get(random.nextInt(users.size()-1))).orElse(null));
+        rateXProfile.setRater(userProfileRepository.findByUser(users.get(random.nextInt(users.size() - 1))).orElse(null));
         rateXProfile.setRate(rate);
         rateXProfileRepository.save(rateXProfile);
         rateXProfileSearchRepository.save(rateXProfile);
-
     }
 
-    private void setUpComment(List<User> users, UserProfile userProfile) {
-        Comment comment = new Comment();
-        comment.setComment(faker.witcher().quote());
+    private void setUpComment(UserProfile poster, UserProfile userProfile) {
+        try {
+            Comment comment = new Comment();
+            comment.setComment(faker.witcher().quote());
 
-        comment = commentRepository.save(comment);
-        commentSearchRepository.save(comment);
+            comment = commentRepository.save(comment);
 
-        CommentXProfile commentXProfile = new CommentXProfile();
-        commentXProfile.setReceiver(userProfile);
-        commentXProfile.setPoster(userProfileRepository.findByUser(users.get(random.nextInt(users.size()-1))).orElse(null));
-        commentXProfile.setComment(comment);
-        commentXProfileRepository.save(commentXProfile);
-        commentXProfileSearchRepository.save(commentXProfile);
-    }
+            CommentXProfile commentXProfile = new CommentXProfile();
+            commentXProfile.setReceiver(userProfile);
 
-    private UserProfile getUserProfile(User user) {
-        return userProfileRepository.findByUser(user).get();
-    }
+            CommentID commentID = new CommentID(userProfile.getId(), poster.getId(), comment.getId());
+            commentXProfile.setCommentID(commentID);
+            commentXProfile.setComment(comment);
+            commentXProfile.setReceiver(userProfile);
+            commentXProfile.setPoster(poster);
+            commentXProfile = commentXProfileRepository.save(commentXProfile);
 
-    private UserDTO getUserDTO() {
-        final var userDTO = new UserDTO();
-        userDTO.setAuthorities(Set.of("USER"));
-        userDTO.setActivated(true);
-        userDTO.setEmail(faker.internet().emailAddress()+RandomUtil.generateResetKey());
-        userDTO.setImageUrl(faker.avatar().image());
-        userDTO.setLogin(faker.name().username()+RandomUtil.generateActivationKey());
-        return userDTO;
+            comment.setCommentXProfile(commentXProfile);
+            commentRepository.save(comment);
+        } catch (Exception ex) {
+            log.error(ex.getLocalizedMessage());
+        }
     }
 }

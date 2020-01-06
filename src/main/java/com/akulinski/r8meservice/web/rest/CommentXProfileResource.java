@@ -95,43 +95,35 @@ public class CommentXProfileResource {
         log.debug("REST request to get all CommentXProfiles");
         return commentXProfileService.findAll();
     }
+/*
 
-    /**
+    */
+/**
      * {@code GET  /comment-x-profiles/:id} : get the "id" commentXProfile.
      *
      * @param id the id of the commentXProfileDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the commentXProfileDTO, or with status {@code 404 (Not Found)}.
-     */
+     *//*
+
     @GetMapping("/comment-x-profiles/{id}")
     public ResponseEntity<CommentXProfileDTO> getCommentXProfile(@PathVariable Long id) {
         log.debug("REST request to get CommentXProfile : {}", id);
         Optional<CommentXProfileDTO> commentXProfileDTO = commentXProfileService.findOne(id);
         return ResponseUtil.wrapOrNotFound(commentXProfileDTO);
     }
-
-    /**
+*/
+/*
+    *//**
      * {@code DELETE  /comment-x-profiles/:id} : delete the "id" commentXProfile.
      *
      * @param id the id of the commentXProfileDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
+     *//*
     @DeleteMapping("/comment-x-profiles/{id}")
     public ResponseEntity<Void> deleteCommentXProfile(@PathVariable Long id) {
         log.debug("REST request to delete CommentXProfile : {}", id);
         commentXProfileService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString())).build();
-    }
+    }*/
 
-    /**
-     * {@code SEARCH  /_search/comment-x-profiles?query=:query} : search for the commentXProfile corresponding
-     * to the query.
-     *
-     * @param query the query of the commentXProfile search.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/comment-x-profiles")
-    public List<CommentXProfileDTO> searchCommentXProfiles(@RequestParam String query) {
-        log.debug("REST request to search CommentXProfiles for query {}", query);
-        return commentXProfileService.search(query);
-    }
 }

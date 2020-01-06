@@ -237,6 +237,26 @@ public class UserService {
         return user;
     }
 
+    public User createUser(UserDTO userDTO, String password) {
+        User user = getUser(userDTO, password);
+        user.setActivated(true);
+        if (userDTO.getAuthorities() != null) {
+            Set<Authority> authorities = userDTO.getAuthorities().stream()
+                .map(authorityRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+            user.setAuthorities(authorities);
+        }
+        userRepository.save(user);
+        userSearchRepository.save(user);
+        this.clearUserCaches(user);
+        log.debug("Created Information for User: {}", user);
+        createProfile(user);
+        log.debug("Created Profile for User: {}", user);
+        return user;
+    }
+
     /**
      * Update basic information (first name, last name, email, language) for the current user.
      *

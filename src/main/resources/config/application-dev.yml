@@ -85,6 +85,7 @@ spring:
       hibernate.cache.use_second_level_cache: true
       hibernate.cache.use_query_cache: false
       hibernate.generate_statistics: false
+
   data:
     jest:
       uri: http://localhost:9200
@@ -94,7 +95,7 @@ spring:
           home: target/elasticsearch
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
-    contexts: dev, faker
+    contexts: dev,faker
   mail:
     host: localhost
     port: 25
@@ -161,3 +162,6 @@ jhipster:
 
 scheduler:
   profilecalc: 1000
+
+mock:
+  comments: 5
