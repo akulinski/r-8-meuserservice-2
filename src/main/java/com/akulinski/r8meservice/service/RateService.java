@@ -146,4 +146,10 @@ public class RateService {
         final User user = userRepository.findOneByLogin(username).orElseThrow(() -> new IllegalStateException(String.format("No user found with username: %s", username)));
         return userProfileRepository.findByUser(user).orElseThrow(() -> new IllegalStateException(String.format("No profile found for user: %s", username)));
     }
+
+    public List<Rate> getAllQuestionsForRate(String id){
+        return questionSearchRepository.findById(id)
+            .orElseThrow(()-> new IllegalStateException(String.format("No question found by id: %s", id)))
+            .getRates();
+    }
 }

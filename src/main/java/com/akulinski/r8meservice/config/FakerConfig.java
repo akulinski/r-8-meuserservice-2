@@ -19,7 +19,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 @Configuration
-@Profile("dev")
+@Profile("mock-data")
 @Slf4j
 @RequiredArgsConstructor
 public class FakerConfig {
@@ -37,7 +37,13 @@ public class FakerConfig {
     private Random random = new Random();
 
     @Value("${mock.comments}")
-    private long commentsAndQuestions;
+    private long comments;
+
+    @Value("${mock.ratesPerQuestion}")
+    private long ratesPerQuestion;
+
+    @Value("${mock.questions}")
+    private long questions;
 
     @EventListener(ApplicationReadyEvent.class)
     public void mockData() {
@@ -50,7 +56,7 @@ public class FakerConfig {
     private UserProfile setUpRatesAndComments(User user) {
         final List<User> users = userRepository.findAll();
         final var userProfile = userProfileRepository.findByUser(user).get();
-        for (int j = 0; j < commentsAndQuestions; j++) {
+        for (int j = 0; j < comments; j++) {
             try {
                 User randomUser = users.get(random.nextInt(users.size() - 1));
                 UserProfile randomProfile = userProfileRepository.findByUser(randomUser).orElse(null);
@@ -62,6 +68,22 @@ public class FakerConfig {
                 }
 
                 setUpComment(randomProfile, userProfile);
+            } catch (Exception ex) {
+                log.error(ex.getLocalizedMessage());
+            }
+        }
+
+        for (int j = 0; j < questions; j++) {
+            try {
+                User randomUser = users.get(random.nextInt(users.size() - 1));
+                UserProfile randomProfile = userProfileRepository.findByUser(randomUser).orElse(null);
+
+                while (randomProfile == null) {
+                    randomUser = users.get(random.nextInt(users.size() - 1));
+                    randomProfile = userProfileRepository.findByUser(randomUser).orElse(null);
+
+                }
+
                 setUpRate(randomProfile, userProfile);
             } catch (Exception ex) {
                 log.error(ex.getLocalizedMessage());
@@ -85,7 +107,7 @@ public class FakerConfig {
         question.setLink(faker.avatar().image());
         question.setPoster(userProfile.getId());
 
-        for(int i=0;i<100;i++){
+        for(int i=0;i<ratesPerQuestion;i++){
             Rate rate = new Rate();
             rate.setReceiver(userProfile.getId());
             rate.setValue(faker.random().nextDouble());

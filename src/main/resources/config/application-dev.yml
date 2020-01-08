@@ -164,4 +164,6 @@ scheduler:
   profilecalc: 1000
 
 mock:
-  comments: 5
+  comments: 10
+  ratesPerQuestion: 10000
+  questions: 10

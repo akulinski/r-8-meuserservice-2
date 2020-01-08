@@ -1,7 +1,6 @@
 package com.akulinski.r8meservice.service;
 
 import com.akulinski.r8meservice.domain.Comment;
-import com.akulinski.r8meservice.domain.UserProfile;
 import com.akulinski.r8meservice.repository.UserProfileRepository;
 import com.akulinski.r8meservice.repository.UserRepository;
 import com.akulinski.r8meservice.repository.search.CommentSearchRepository;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -105,6 +105,6 @@ public class CommentService {
             }
             commentDTO.setTimeStamp(Instant.now());
             return commentDTO;
-        }).sorted().collect(Collectors.toList());
+        }).sorted(Collections.reverseOrder()).collect(Collectors.toList());
     }
 }

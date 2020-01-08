@@ -443,7 +443,16 @@
                             <version>${jaxb-runtime.version}</version>
                         </path>
                         <!-- jhipster-needle-maven-add-annotation-processor -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.10</version>
+                        </path>
                     </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>-sourcepath</arg>
+                        <arg>${project.basedir}/src/main/java${path.separator}${project.basedir}/target/generated-sources/annotations${path.separator}/</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>

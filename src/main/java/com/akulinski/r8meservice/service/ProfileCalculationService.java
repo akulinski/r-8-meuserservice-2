@@ -27,7 +27,9 @@ public class ProfileCalculationService {
 
     @Scheduled(fixedRateString = "${scheduler.profilecalc}")
     @Transactional
-    public void calcProfileAverage(){
+    public void calcProfileAverage() {
+        long startTime = System.currentTimeMillis();
+
         log.info("Running profile scheduler ");
 
         userProfileRepository.findAllStream().forEach(userProfile -> {
@@ -38,7 +40,10 @@ public class ProfileCalculationService {
             userProfileRepository.save(userProfile);
             userProfileSearchRepository.save(userProfile);
         });
+        long stopTime = System.currentTimeMillis();
+        long elapsedTime = stopTime - startTime;
 
         log.info("Profile scheduler finished");
+        log.info("Profile scheduler took: {}", elapsedTime);
     }
 }
