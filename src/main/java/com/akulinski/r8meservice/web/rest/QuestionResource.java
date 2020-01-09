@@ -30,6 +30,12 @@ public class QuestionResource {
         return ResponseEntity.ok(questionService.getQuestionsForUser());
     }
 
+    @GetMapping("/question/question-by-username/{username}")
+    public ResponseEntity<List<Question>> getAllQuestionsForAnyUser(@PathVariable("username") String username) {
+        return ResponseEntity.ok(questionService.getQuestionsForUser(username));
+    }
+
+
     @PostMapping("/question/add")
     public ResponseEntity addQuestion(@RequestParam("photo") MultipartFile multipartFile, @RequestParam("question") QuestionDTO questionDTO) throws URISyntaxException {
 

@@ -98,11 +98,15 @@ public class RateService {
 
     private Function<Rate, RateDTO> mapRateToDTOFunction() {
         return rate -> {
+            final var posterProfile = userProfileRepository.findById(rate.getPoster()).orElseThrow(() -> new IllegalStateException(String.format("No user profile for id: %d", rate.getPoster())));
+            final var receiverProfile = userProfileRepository.findById(rate.getReceiver()).orElseThrow(() -> new IllegalStateException(String.format("No user profile for id: %d", rate.getReceiver())));
             RateDTO rateDTO = new RateDTO();
             rateDTO.setValue(rate.getValue());
             rateDTO.setTimeStamp(rate.getTimeStamp());
+            rateDTO.setRated(receiverProfile.getUser().getLogin());
+            rateDTO.setPoster(posterProfile.getUser().getLogin());
+            rateDTO.setPosterLink(posterProfile.getUser().getImageUrl());
             return rateDTO;
-
         };
     }
 

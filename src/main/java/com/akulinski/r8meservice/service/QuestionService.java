@@ -2,6 +2,7 @@ package com.akulinski.r8meservice.service;
 
 import com.akulinski.r8meservice.domain.Question;
 import com.akulinski.r8meservice.repository.UserProfileRepository;
+import com.akulinski.r8meservice.repository.UserRepository;
 import com.akulinski.r8meservice.repository.search.QuestionSearchRepository;
 import com.akulinski.r8meservice.service.dto.QuestionDTO;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,8 @@ public class QuestionService {
     private final UserService userService;
 
     private final UserProfileRepository userProfileRepository;
+
+    private final UserRepository userRepository;
 
     public Question createQuestion(QuestionDTO questionDTO, MultipartFile multipartFile) {
 
@@ -48,6 +51,12 @@ public class QuestionService {
 
     public List<Question> getQuestionsForUser() {
         final var posterUser = userService.getUserWithAuthorities().orElseThrow(() -> new IllegalStateException("User no found"));
+        final var posterProfile = userProfileRepository.findByUser(posterUser).orElseThrow(() -> new IllegalStateException(String.format("No profile connected to user: %d", posterUser.getId())));
+        return questionSearchRepository.findAllByPoster(posterProfile.getId());
+    }
+
+    public List<Question> getQuestionsForUser(String username) {
+        final var posterUser = userRepository.findOneByLogin(username).orElseThrow(()->new IllegalStateException(String.format("No user found by username: %s", username)));
         final var posterProfile = userProfileRepository.findByUser(posterUser).orElseThrow(() -> new IllegalStateException(String.format("No profile connected to user: %d", posterUser.getId())));
         return questionSearchRepository.findAllByPoster(posterProfile.getId());
     }
