@@ -6,6 +6,7 @@ import com.akulinski.r8meservice.web.rest.errors.BadRequestAlertException;
 import io.github.jhipster.web.util.HeaderUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -83,4 +84,16 @@ public class RateResource {
         return rateService.findAll();
     }
 
+    /**
+     * Return rates for user
+     *
+     * @param username of user that rates are requested for
+     *
+     * @return List of rates
+     */
+    @GetMapping("/rates/{username}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<RateDTO> getAllRatesForUser(@PathVariable("username") String username) {
+        return rateService.findAll(username);
+    }
 }

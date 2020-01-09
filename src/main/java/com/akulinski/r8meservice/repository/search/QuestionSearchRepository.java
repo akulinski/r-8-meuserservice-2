@@ -18,5 +18,7 @@ public interface QuestionSearchRepository extends ElasticsearchCrudRepository<Qu
     )
     List<Question> findAllQuestions();
 
+    List<Question> findAllByPoster(long poster);
+
     List<Question> findAllByPoster(Long poster);
 }

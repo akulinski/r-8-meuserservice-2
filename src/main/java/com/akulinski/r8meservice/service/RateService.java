@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -71,14 +73,37 @@ public class RateService {
         return questionSearchRepository.findAllQuestions().stream()
             .map(Question::getRates)
             .flatMap(Collection::stream)
-            .map(rate -> {
-                RateDTO rateDTO = new RateDTO();
-                rateDTO.setValue(rate.getValue());
-                rateDTO.setTimeStamp(rate.getTimeStamp());
-                return rateDTO;
-
-            })
+            .map(mapRateToDTOFunction())
             .collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    /**
+     * Get all the rates for user
+     *
+     * @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public List<RateDTO> findAll(String useranme) {
+        log.debug("Request to get all Rates for user {}", useranme);
+
+        final var user = userRepository.findOneByLogin(useranme).orElseThrow(() -> new IllegalStateException(String.format("No user found by username: %s", useranme)));
+        final var profile = userProfileRepository.findByUser(user).orElseThrow(() -> new IllegalStateException(String.format("No profile connected to user %s", user.getId())));
+
+        return questionSearchRepository.findAllByPoster(profile.getId()).stream()
+            .map(Question::getRates)
+            .flatMap(Collection::stream)
+            .map(mapRateToDTOFunction())
+            .collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    private Function<Rate, RateDTO> mapRateToDTOFunction() {
+        return rate -> {
+            RateDTO rateDTO = new RateDTO();
+            rateDTO.setValue(rate.getValue());
+            rateDTO.setTimeStamp(rate.getTimeStamp());
+            return rateDTO;
+
+        };
     }
 
 
@@ -147,9 +172,9 @@ public class RateService {
         return userProfileRepository.findByUser(user).orElseThrow(() -> new IllegalStateException(String.format("No profile found for user: %s", username)));
     }
 
-    public List<Rate> getAllQuestionsForRate(String id){
+    public List<Rate> getAllQuestionsForRate(String id) {
         return questionSearchRepository.findById(id)
-            .orElseThrow(()-> new IllegalStateException(String.format("No question found by id: %s", id)))
+            .orElseThrow(() -> new IllegalStateException(String.format("No question found by id: %s", id)))
             .getRates();
     }
 }

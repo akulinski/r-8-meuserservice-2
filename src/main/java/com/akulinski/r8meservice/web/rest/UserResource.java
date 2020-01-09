@@ -231,16 +231,20 @@ public class UserResource {
             byLogin = Lists.newArrayList(combinedIterables);
         }
 
-        return StreamSupport
-            .stream(byLogin.spliterator(), false)
+        return byLogin.stream()
             .distinct()
-            .map(user -> getUserProfileVM(user))
+            .map(this::getUserProfileVM)
             .collect(Collectors.toList());
     }
 
     @GetMapping("/user")
     public ResponseEntity<UserProfileVM> getCurrentUser() {
         return ResponseEntity.ok(getUserProfileVM());
+    }
+
+    @GetMapping("/user/{username}")
+    public ResponseEntity<UserProfileVM> getUserByUsername(@PathVariable("username") String username) {
+        return ResponseEntity.ok(getUserProfileVMFromLogin(username));
     }
 
     private UserProfileVM getUserProfileVM(User user) {
@@ -282,9 +286,14 @@ public class UserResource {
 
     private UserProfileVM getUserProfileVM() {
         final var currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new IllegalStateException("No login found"));
+        return getUserProfileVMFromLogin(currentLogin);
+    }
+
+    private UserProfileVM getUserProfileVMFromLogin(String currentLogin) {
         final var currentUser = userRepository.findOneByLogin(currentLogin).orElseThrow(() -> new IllegalStateException(String.format("User not found with login: %s", currentLogin)));
         final var profile = userProfileRepository.findByUser(currentUser).orElseThrow(() -> new IllegalStateException(String.format("No profile is connected to user: %s", currentLogin)));
 
         return new UserProfileVM(currentLogin, profile.getCurrentRating(), currentUser.getImageUrl(), followerXFollowedRepository.findAllByFollowed(profile).size(), commentSearchRepository.findAllByReceiver(profile.getId()).size());
     }
+
 }
