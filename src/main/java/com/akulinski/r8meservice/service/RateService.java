@@ -68,7 +68,7 @@ public class RateService {
     @Transactional(readOnly = true)
     public List<RateDTO> findAll() {
         log.debug("Request to get all Rates");
-        return questionSearchRepository.findAll().stream()
+        return questionSearchRepository.findAllQuestions().stream()
             .map(Question::getRates)
             .flatMap(Collection::stream)
             .map(rate -> {
