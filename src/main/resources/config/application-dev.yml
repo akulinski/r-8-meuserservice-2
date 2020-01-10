@@ -39,6 +39,11 @@ spring:
       - swagger
       # Uncomment to activate TLS for the dev profile
       #- tls
+  cloud:
+    gcp:
+      project-id: ${PROJECT_ID}
+      credentials:
+        encoded-key: ${ENCODED_KEY}
   devtools:
     restart:
       enabled: true
@@ -61,7 +66,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:file:./target/h2db/db/r8meuserservice2;DB_CLOSE_DELAY=-1
+    url: jdbc:postgresql://localhost:5432/r8meuserservice2
     username: r8meuserservice2
     password:
     hikari:
@@ -71,15 +76,16 @@ spring:
     console:
       enabled: false
   jpa:
-    database-platform: io.github.jhipster.domain.util.FixedH2Dialect
-    database: H2
-    show-sql: true
+    database-platform: io.github.jhipster.domain.util.FixedPostgreSQL95Dialect
+    database: POSTGRESQL
+    show-sql: false
     properties:
       hibernate.id.new_generator_mappings: true
       hibernate.connection.provider_disables_autocommit: true
       hibernate.cache.use_second_level_cache: true
       hibernate.cache.use_query_cache: false
       hibernate.generate_statistics: false
+
   data:
     jest:
       uri: http://localhost:9200
@@ -89,12 +95,18 @@ spring:
           home: target/elasticsearch
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
-    contexts: dev, faker
+    contexts: dev,faker
   mail:
-    host: localhost
-    port: 25
-    username:
-    password:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME} #Replace this field with your Gmail username.
+    password: ${MAIL_PASSWORD} #Replace this field with your Gmail password/App password.
+    protocol: smtp
+    tls: true
+    properties.mail.smtp:
+      auth: true
+      starttls.enable: true
+      ssl.trust: smtp.gmail.com
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
@@ -156,3 +168,8 @@ jhipster:
 
 scheduler:
   profilecalc: 1000
+
+mock:
+  comments: 10
+  ratesPerQuestion: 10
+  questions: 10

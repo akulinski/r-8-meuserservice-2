@@ -2,25 +2,35 @@ package com.akulinski.r8meservice.web.rest;
 
 import com.akulinski.r8meservice.config.Constants;
 import com.akulinski.r8meservice.domain.User;
-import com.akulinski.r8meservice.repository.CommentXProfileRepository;
+import com.akulinski.r8meservice.domain.UserProfile;
 import com.akulinski.r8meservice.repository.FollowerXFollowedRepository;
 import com.akulinski.r8meservice.repository.UserProfileRepository;
 import com.akulinski.r8meservice.repository.UserRepository;
+import com.akulinski.r8meservice.repository.search.CommentSearchRepository;
+import com.akulinski.r8meservice.repository.search.UserProfileSearchRepository;
 import com.akulinski.r8meservice.repository.search.UserSearchRepository;
 import com.akulinski.r8meservice.security.AuthoritiesConstants;
 import com.akulinski.r8meservice.security.SecurityUtils;
 import com.akulinski.r8meservice.service.MailService;
+import com.akulinski.r8meservice.service.PhotoStorageService;
 import com.akulinski.r8meservice.service.UserService;
 import com.akulinski.r8meservice.service.dto.UserDTO;
 import com.akulinski.r8meservice.web.rest.errors.BadRequestAlertException;
 import com.akulinski.r8meservice.web.rest.errors.EmailAlreadyUsedException;
 import com.akulinski.r8meservice.web.rest.errors.LoginAlreadyUsedException;
+import com.akulinski.r8meservice.web.rest.vm.PhotoVM;
 import com.akulinski.r8meservice.web.rest.vm.UserProfileVM;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +38,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
@@ -38,8 +50,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 /**
  * REST controller for managing users.
@@ -67,9 +77,9 @@ import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
  */
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
+@Slf4j
 public class UserResource {
-
-    private final Logger log = LoggerFactory.getLogger(UserResource.class);
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
@@ -82,23 +92,15 @@ public class UserResource {
 
     private final FollowerXFollowedRepository followerXFollowedRepository;
 
-    private final CommentXProfileRepository commentXProfileRepository;
+    private final UserProfileSearchRepository userProfileSearchRepository;
 
     private final MailService mailService;
 
     private final UserSearchRepository userSearchRepository;
 
-    public UserResource(UserService userService, UserRepository userRepository, UserProfileRepository userProfileRepository,
-                        FollowerXFollowedRepository followerXFollowedRepository, CommentXProfileRepository commentXProfileRepository, MailService mailService, UserSearchRepository userSearchRepository) {
+    private final PhotoStorageService photoStorageService;
 
-        this.userService = userService;
-        this.userRepository = userRepository;
-        this.userProfileRepository = userProfileRepository;
-        this.followerXFollowedRepository = followerXFollowedRepository;
-        this.commentXProfileRepository = commentXProfileRepository;
-        this.mailService = mailService;
-        this.userSearchRepository = userSearchRepository;
-    }
+    private final CommentSearchRepository commentSearchRepository;
 
     /**
      * {@code POST  /users}  : Creates a new user.
@@ -220,24 +222,71 @@ public class UserResource {
      * @return the result of the search.
      */
     @GetMapping("/_search/users/{query}")
-    public List<User> search(@PathVariable String query) {
-        return StreamSupport
-            .stream(userSearchRepository.search(queryStringQuery(query)).spliterator(), false)
+    public List<UserProfileVM> search(@PathVariable String query) {
+        var byLogin = userSearchRepository.findByLoginFuzzy(query);
+
+        if (byLogin.size() < 5) {
+            Iterable<User> combinedIterables = Iterables.unmodifiableIterable(
+                Iterables.concat(userSearchRepository.findByLoginFuzzy(query), userSearchRepository.findByRegex(query)));
+            byLogin = Lists.newArrayList(combinedIterables);
+        }
+
+        return byLogin.stream()
+            .distinct()
+            .map(this::getUserProfileVM)
             .collect(Collectors.toList());
     }
-
 
     @GetMapping("/user")
     public ResponseEntity<UserProfileVM> getCurrentUser() {
         return ResponseEntity.ok(getUserProfileVM());
     }
 
+    @GetMapping("/user/{username}")
+    public ResponseEntity<UserProfileVM> getUserByUsername(@PathVariable("username") String username) {
+        return ResponseEntity.ok(getUserProfileVMFromLogin(username));
+    }
+
+    private UserProfileVM getUserProfileVM(User user) {
+
+        final var profile = userProfileRepository.findByUser(user).orElseThrow(()->new IllegalStateException(String.format("No profile found for user: %d", user.getId())));
+
+        return new UserProfileVM(user.getLogin(), profile.getCurrentRating(), user.getImageUrl(), followerXFollowedRepository.findAllByFollowed(profile).size(), commentSearchRepository.findAllByReceiver(profile.getId()).size());
+    }
+
+    @PostMapping("/user/upload-photo")
+    public ResponseEntity<Void> uploadPhoto(@RequestParam("photo") MultipartFile multipartFile) {
+        final User user = getUserFromContext();
+        final var link = photoStorageService.storeProfilePicture(multipartFile, user);
+
+        if (StringUtils.isNotEmpty(link)) {
+            return ResponseEntity.created(URI.create(link)).build();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    private User getUserFromContext() {
+        final var username = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new IllegalStateException("No Username provided"));
+        return userRepository.findOneByLogin(username).orElseThrow(() -> new UsernameNotFoundException(username));
+    }
+
+    @GetMapping("user/get-avatar")
+    public ResponseEntity<PhotoVM> getAvatar() {
+        final User user = getUserFromContext();
+        return ResponseEntity.ok(new PhotoVM(photoStorageService.getLinkForUser(user)));
+    }
 
     private UserProfileVM getUserProfileVM() {
         final var currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new IllegalStateException("No login found"));
+        return getUserProfileVMFromLogin(currentLogin);
+    }
+
+    private UserProfileVM getUserProfileVMFromLogin(String currentLogin) {
         final var currentUser = userRepository.findOneByLogin(currentLogin).orElseThrow(() -> new IllegalStateException(String.format("User not found with login: %s", currentLogin)));
         final var profile = userProfileRepository.findByUser(currentUser).orElseThrow(() -> new IllegalStateException(String.format("No profile is connected to user: %s", currentLogin)));
 
-        return new UserProfileVM(currentLogin, profile.getCurrentRating(), currentUser.getImageUrl(), followerXFollowedRepository.findAllByFollowed(profile).size(), commentXProfileRepository.findAllByReceiver(profile).size());
+        return new UserProfileVM(currentLogin, profile.getCurrentRating(), currentUser.getImageUrl(), followerXFollowedRepository.findAllByFollowed(profile).size(), commentSearchRepository.findAllByReceiver(profile.getId()).size());
     }
+
 }

@@ -4,13 +4,15 @@ import com.akulinski.r8meservice.RedisTestContainerExtension;
 import com.akulinski.r8meservice.R8Meuserservice2App;
 import com.akulinski.r8meservice.domain.Authority;
 import com.akulinski.r8meservice.domain.User;
-import com.akulinski.r8meservice.repository.CommentXProfileRepository;
 import com.akulinski.r8meservice.repository.FollowerXFollowedRepository;
 import com.akulinski.r8meservice.repository.UserProfileRepository;
 import com.akulinski.r8meservice.repository.UserRepository;
+import com.akulinski.r8meservice.repository.search.CommentSearchRepository;
+import com.akulinski.r8meservice.repository.search.UserProfileSearchRepository;
 import com.akulinski.r8meservice.repository.search.UserSearchRepository;
 import com.akulinski.r8meservice.security.AuthoritiesConstants;
 import com.akulinski.r8meservice.service.MailService;
+import com.akulinski.r8meservice.service.PhotoStorageService;
 import com.akulinski.r8meservice.service.UserService;
 import com.akulinski.r8meservice.service.dto.UserDTO;
 import com.akulinski.r8meservice.service.mapper.UserMapper;
@@ -113,16 +115,22 @@ public class UserResourceIT {
     private UserProfileRepository userProfileRepository;
 
     @Autowired
+    private UserProfileSearchRepository userProfileSearchRepository;
+
+    @Autowired
     private FollowerXFollowedRepository followerXFollowedRepository;
 
     @Autowired
-    private CommentXProfileRepository commentXProfileRepository;
+    private PhotoStorageService photoStorageService;
+
+    @Autowired
+    private CommentSearchRepository commentSearchRepository;
 
     @BeforeEach
     public void setup() {
         cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).clear();
         cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).clear();
-        UserResource userResource = new UserResource(userService, userRepository, userProfileRepository, followerXFollowedRepository, commentXProfileRepository, mailService, mockUserSearchRepository);
+        UserResource userResource = new UserResource(userService, userRepository, userProfileRepository, followerXFollowedRepository, userProfileSearchRepository, mailService, mockUserSearchRepository, photoStorageService, commentSearchRepository);
 
         this.restUserMockMvc = MockMvcBuilders.standaloneSetup(userResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
@@ -133,7 +141,7 @@ public class UserResourceIT {
 
     /**
      * Create a User.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which has a required relationship to the User entity.
      */

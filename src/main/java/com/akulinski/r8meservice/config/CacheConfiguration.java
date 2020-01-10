@@ -1,26 +1,20 @@
 package com.akulinski.r8meservice.config;
 
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.client.serviceregistry.Registration;
-import org.springframework.context.annotation.*;
+import io.github.jhipster.config.JHipsterProperties;
+import org.hibernate.cache.jcache.ConfigSettings;
 import org.redisson.Redisson;
 import org.redisson.config.Config;
 import org.redisson.jcache.configuration.RedissonConfiguration;
 import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
-import org.hibernate.cache.jcache.ConfigSettings;
-
-import java.util.concurrent.TimeUnit;
 
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.CreatedExpiryPolicy;
 import javax.cache.expiry.Duration;
-
-import io.github.jhipster.config.JHipsterProperties;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableCaching
@@ -53,8 +47,6 @@ public class CacheConfiguration {
             createCache(cm, com.akulinski.r8meservice.domain.UserProfile.class.getName(), jcacheConfiguration);
             createCache(cm, com.akulinski.r8meservice.domain.Rate.class.getName(), jcacheConfiguration);
             createCache(cm, com.akulinski.r8meservice.domain.Comment.class.getName(), jcacheConfiguration);
-            createCache(cm, com.akulinski.r8meservice.domain.RateXProfile.class.getName(), jcacheConfiguration);
-            createCache(cm, com.akulinski.r8meservice.domain.CommentXProfile.class.getName(), jcacheConfiguration);
             createCache(cm, com.akulinski.r8meservice.domain.FollowerXFollowed.class.getName(), jcacheConfiguration);
             // jhipster-needle-redis-add-entry
         };

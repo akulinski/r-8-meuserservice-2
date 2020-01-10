@@ -1,0 +1,408 @@
+{
+  "info": {
+    "_postman_id": "e6ca65c3-f2e3-49ff-a1df-9e2c2eabe651",
+    "name": "r8me",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "auth",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "name": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\t\"username\":\"user\",\n\t\"password\":\"user\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/authenticate",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "authenticate"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "get-avatar",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImF1dGgiOiJST0xFX0FETUlOLFJPTEVfVVNFUiIsImV4cCI6MTU3ODE3MjEzMX0.zWi3aPvMV0CRvgSyBrMLcNigyAtjONBj8Gdjzdw8HgLCz9jWOKUI0EMYBj0qGLbz0lTjN73Box72Ubi5VOfV7Q",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/user/get-avatar",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "user", "get-avatar"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "localhost:8080/api/user/upload-photo",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImF1dGgiOiJST0xFX0FETUlOLFJPTEVfVVNFUiIsImV4cCI6MTU3ODQwNjY5Mn0.kJ0MFgB3XOK4eOXlDtJTDVQ_9bOuREB7os6hjfrs3U_Za69f6rKqsqm6wtAEJeJ9oihXISlgYVSJQyGFMGuDaQ",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "photo",
+              "type": "file",
+              "src": "/C:/Users/AlbertKuliński/Downloads/https___hypebeast.com_wp-content_blogs.dir_6_files_2019_11_spongebob-squarepants-spinoff-squidward-netflix-series-info-1.jpg"
+            }
+          ]
+        },
+        "url": {
+          "raw": "localhost:8080/api/user/upload-photo",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "user", "upload-photo"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "getComments",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTU3ODYwMjcwNn0.UiAEYAJhwnw09_JylsgXTV-kUBH2bif_T6dDvs4WsvVSguJuZi1ttIQIaSRvbMzsJzcgHVvVEsGQG0fVZa_psA",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/comments/comments-for-user",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "comments", "comments-for-user"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "add comment",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImF1dGgiOiJST0xFX0FETUlOLFJPTEVfVVNFUiIsImV4cCI6MTU3ODUxNjMwNH0.9AyuMYgFB9MeyD8Sjh6OrEawU5J6vxLDfaHrtmbvcVWjb2yuHwtM5aUSihmNHCrKxy1f3R5YSY9MkhtpGzrkgw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "name": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\t\"receiver\": \"admin\",\n\t\"comment\": \"Fuck Off m9\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/comments",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "getallrates",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTU3ODYwMjcwNn0.UiAEYAJhwnw09_JylsgXTV-kUBH2bif_T6dDvs4WsvVSguJuZi1ttIQIaSRvbMzsJzcgHVvVEsGQG0fVZa_psA",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/rates",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "rates"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "get questiosn for user",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTU3ODUxOTM0Mn0.YWNubEyb9_HoDOPmVWAL786EHMt9HiI_20MYxsQH4TYsq5o_AG2dnWZPaV0FSataMcPmikSMGCF8h1GjxZIXEg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "name": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": []
+        },
+        "url": {
+          "raw": "localhost:8080/api/question",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "question"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "localhost:8080/api/rates",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImF1dGgiOiJST0xFX0FETUlOLFJPTEVfVVNFUiIsImV4cCI6MTU3ODQwNjY5Mn0.kJ0MFgB3XOK4eOXlDtJTDVQ_9bOuREB7os6hjfrs3U_Za69f6rKqsqm6wtAEJeJ9oihXISlgYVSJQyGFMGuDaQ",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "name": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\t\"rated\":\"system\",\n\t\"value\": \"0.771\",\n\t\"rater\": \"admin\",\n\t\"question\": \"ile w dupe\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8080/api/rates",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "rates"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "question by id",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTU3ODUxOTM0Mn0.YWNubEyb9_HoDOPmVWAL786EHMt9HiI_20MYxsQH4TYsq5o_AG2dnWZPaV0FSataMcPmikSMGCF8h1GjxZIXEg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/question/uedahm8BbAzmuQ0qrcS2",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "question", "uedahm8BbAzmuQ0qrcS2"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "search",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTU3ODYwMjcwNn0.UiAEYAJhwnw09_JylsgXTV-kUBH2bif_T6dDvs4WsvVSguJuZi1ttIQIaSRvbMzsJzcgHVvVEsGQG0fVZa_psA",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/_search/users/a",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "_search", "users", "a"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "comments for user",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTU3ODYwMjcwNn0.UiAEYAJhwnw09_JylsgXTV-kUBH2bif_T6dDvs4WsvVSguJuZi1ttIQIaSRvbMzsJzcgHVvVEsGQG0fVZa_psA",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/comments/comments-for-user/admin",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "comments", "comments-for-user", "admin"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "rates for user",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTU3ODYwMjcwNn0.UiAEYAJhwnw09_JylsgXTV-kUBH2bif_T6dDvs4WsvVSguJuZi1ttIQIaSRvbMzsJzcgHVvVEsGQG0fVZa_psA",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/rates/admin",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "rates", "admin"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "user profile",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTU3ODYwMjcwNn0.UiAEYAJhwnw09_JylsgXTV-kUBH2bif_T6dDvs4WsvVSguJuZi1ttIQIaSRvbMzsJzcgHVvVEsGQG0fVZa_psA",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/user",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "user"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "any user profile",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTU3ODYwMjcwNn0.UiAEYAJhwnw09_JylsgXTV-kUBH2bif_T6dDvs4WsvVSguJuZi1ttIQIaSRvbMzsJzcgHVvVEsGQG0fVZa_psA",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/user/user",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "user", "user"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "protocolProfileBehavior": {}
+}
