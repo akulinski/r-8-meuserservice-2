@@ -97,6 +97,18 @@ public class FollowerXFollowedResource {
     }
 
     /**
+     * {@code GET  /follower-x-followeds} : get all the followerXFolloweds.
+     *
+
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of followerXFolloweds in body.
+     */
+    @GetMapping("/user-followers")
+    public List<FollowerXFollowedDTO> getUserFollowers() {
+        log.debug("REST request to get user's followers");
+        return followerXFollowedService.findUserFollowers();
+    }
+
+    /**
      * {@code GET  /follower-x-followeds/:id} : get the "id" followerXFollowed.
      *
      * @param id the id of the followerXFollowedDTO to retrieve.
