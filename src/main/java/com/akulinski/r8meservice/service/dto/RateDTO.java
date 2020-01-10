@@ -1,9 +1,9 @@
 package com.akulinski.r8meservice.service.dto;
+
 import lombok.Data;
 
-import java.time.Instant;
 import java.io.Serializable;
-import java.util.Objects;
+import java.time.Instant;
 
 /**
  * A DTO for the {@link com.akulinski.r8meservice.domain.Rate} entity.
@@ -22,4 +22,9 @@ public class RateDTO implements Serializable {
     private String rating;
 
     private String questionId;
+
+    private String poster;
+
+    private String posterLink;
+
 }

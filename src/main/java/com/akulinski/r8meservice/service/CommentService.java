@@ -82,7 +82,16 @@ public class CommentService {
 
     public List<CommentDTO> findCommentsForUser() {
         final var username = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new IllegalStateException("NO username for current user"));
+        return getCommentDTOSForUsername(username);
+    }
+
+    public List<CommentDTO> findCommentsForUser(String username) {
+        return getCommentDTOSForUsername(username);
+    }
+
+    private List<CommentDTO> getCommentDTOSForUsername(String username) {
         final var user = userRepository.findOneByLogin(username).orElseThrow(() -> new IllegalStateException(String.format("No user for username: %s", username)));
+
         final var userProfile = userProfileRepository.findByUser(user).orElseThrow(() -> new IllegalStateException(String.format("No profile connected to user: %s", username)));
 
         log.debug("Request to find all comments for user {}", username);

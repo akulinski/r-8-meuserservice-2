@@ -80,7 +80,6 @@ public class CommentResource {
     /**
      * {@code GET  /comments} : get all the comments.
      *
-
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of comments in body.
      */
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
@@ -94,7 +93,6 @@ public class CommentResource {
     /**
      * {@code GET  /comments} : get all the comments.
      *
-
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of comments in body.
      */
     @PreAuthorize("hasRole(\"" + AuthoritiesConstants.ADMIN + "\")")
@@ -107,8 +105,14 @@ public class CommentResource {
 
     @GetMapping("/comments/comments-for-user")
     @ResponseStatus(HttpStatus.OK)
-    public List<CommentDTO> getCommentsForUser(){
+    public List<CommentDTO> getCommentsForUser() {
         return commentService.findCommentsForUser();
+    }
+
+    @GetMapping("/comments/comments-for-user/{username}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentDTO> getCommentsForUser(@PathVariable("username") String username) {
+        return commentService.findCommentsForUser(username);
     }
 
 }

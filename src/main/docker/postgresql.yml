@@ -2,10 +2,22 @@ version: '2'
 services:
   r8meuserservice2-postgresql:
     image: postgres:11.5
-    # volumes:
-    #     - ~/volumes/jhipster/r8meuserservice2/postgresql/:/var/lib/postgresql/data/
+    #volumes:
+    #     - ./postgresql/:/var/lib/postgresql/data/
     environment:
       - POSTGRES_USER=r8meuserservice2
       - POSTGRES_PASSWORD=
     ports:
       - 5432:5432
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    depends_on:
+      - r8meuserservice2-postgresql
+    ports:
+      - 5050:80
+    ## you can change pgAdmin default username/password with below environment variables
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin@r8me.com
+      PGADMIN_DEFAULT_PASSWORD: admin

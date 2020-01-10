@@ -1,10 +1,12 @@
 package com.akulinski.r8meservice.config;
 
 import com.akulinski.r8meservice.domain.*;
+import com.akulinski.r8meservice.repository.AuthorityRepository;
 import com.akulinski.r8meservice.repository.UserProfileRepository;
 import com.akulinski.r8meservice.repository.UserRepository;
 import com.akulinski.r8meservice.repository.search.CommentSearchRepository;
 import com.akulinski.r8meservice.repository.search.QuestionSearchRepository;
+import com.akulinski.r8meservice.service.UserService;
 import com.github.javafaker.Faker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,10 @@ public class FakerConfig {
 
     private final QuestionSearchRepository questionSearchRepository;
 
+    private final AuthorityRepository authorityRepository;
+
+    private final UserService userService;
+
     private Random random = new Random();
 
     @Value("${mock.comments}")
@@ -47,10 +53,12 @@ public class FakerConfig {
 
     @EventListener(ApplicationReadyEvent.class)
     public void mockData() {
+        questionSearchRepository.deleteAll();
+        commentSearchRepository.deleteAll();
 
-        List<User> emptyProfiles = userRepository.findAll().stream().filter(user -> userProfileRepository.findByUser(user).isEmpty()).collect(Collectors.toList());
-        emptyProfiles.forEach(this::createUserProfile);
-        emptyProfiles.forEach(this::setUpRatesAndComments);
+        List<User> profiles = userRepository.findAll().stream().filter(user -> userProfileRepository.findByUser(user).isEmpty()).collect(Collectors.toList());
+        profiles.forEach(this::createUserProfile);
+        userRepository.findAll().forEach(this::setUpRatesAndComments);
     }
 
     private UserProfile setUpRatesAndComments(User user) {
@@ -107,7 +115,7 @@ public class FakerConfig {
         question.setLink(faker.avatar().image());
         question.setPoster(userProfile.getId());
 
-        for(int i=0;i<ratesPerQuestion;i++){
+        for (int i = 0; i < ratesPerQuestion; i++) {
             Rate rate = new Rate();
             rate.setReceiver(userProfile.getId());
             rate.setValue(faker.random().nextDouble());

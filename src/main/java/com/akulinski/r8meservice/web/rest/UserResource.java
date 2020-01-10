@@ -231,10 +231,9 @@ public class UserResource {
             byLogin = Lists.newArrayList(combinedIterables);
         }
 
-        return StreamSupport
-            .stream(byLogin.spliterator(), false)
+        return byLogin.stream()
             .distinct()
-            .map(user -> getUserProfileVM(user))
+            .map(this::getUserProfileVM)
             .collect(Collectors.toList());
     }
 
@@ -243,18 +242,16 @@ public class UserResource {
         return ResponseEntity.ok(getUserProfileVM());
     }
 
+    @GetMapping("/user/{username}")
+    public ResponseEntity<UserProfileVM> getUserByUsername(@PathVariable("username") String username) {
+        return ResponseEntity.ok(getUserProfileVMFromLogin(username));
+    }
+
     private UserProfileVM getUserProfileVM(User user) {
-        final var currentUser = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalStateException(String.format("User not found with id: %s", user.getId())));
 
-        final var profile = userProfileRepository.findByUser(currentUser).orElseGet(() -> {
-            UserProfile userProfile = new UserProfile();
-            userProfile.setUser(currentUser);
-            userProfileRepository.save(userProfile);
-            userProfileSearchRepository.save(userProfile);
-            return userProfile;
-        });
+        final var profile = userProfileRepository.findByUser(user).orElseThrow(()->new IllegalStateException(String.format("No profile found for user: %d", user.getId())));
 
-        return new UserProfileVM(user.getLogin(), profile.getCurrentRating(), currentUser.getImageUrl(), followerXFollowedRepository.findAllByFollowed(profile).size(), commentSearchRepository.findAllByReceiver(profile.getId()).size());
+        return new UserProfileVM(user.getLogin(), profile.getCurrentRating(), user.getImageUrl(), followerXFollowedRepository.findAllByFollowed(profile).size(), commentSearchRepository.findAllByReceiver(profile.getId()).size());
     }
 
     @PostMapping("/user/upload-photo")
@@ -282,9 +279,14 @@ public class UserResource {
 
     private UserProfileVM getUserProfileVM() {
         final var currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new IllegalStateException("No login found"));
+        return getUserProfileVMFromLogin(currentLogin);
+    }
+
+    private UserProfileVM getUserProfileVMFromLogin(String currentLogin) {
         final var currentUser = userRepository.findOneByLogin(currentLogin).orElseThrow(() -> new IllegalStateException(String.format("User not found with login: %s", currentLogin)));
         final var profile = userProfileRepository.findByUser(currentUser).orElseThrow(() -> new IllegalStateException(String.format("No profile is connected to user: %s", currentLogin)));
 
         return new UserProfileVM(currentLogin, profile.getCurrentRating(), currentUser.getImageUrl(), followerXFollowedRepository.findAllByFollowed(profile).size(), commentSearchRepository.findAllByReceiver(profile.getId()).size());
     }
+
 }
