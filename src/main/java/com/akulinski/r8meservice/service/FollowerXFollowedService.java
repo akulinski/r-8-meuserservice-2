@@ -67,6 +67,18 @@ public class FollowerXFollowedService {
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
+    /**
+     * Get followers of certain User.
+     *
+     * @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public List<FollowerXFollowedDTO> findUserFollowers() {
+        log.debug("Request to get Followers of certain User");
+        return followerXFollowedRepository.findUserFollowers().stream()
+            .map(followerXFollowedMapper::toDto)
+            .collect(Collectors.toCollection(LinkedList::new));
+    }
 
     /**
      * Follow action
