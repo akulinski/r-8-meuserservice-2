@@ -348,6 +348,15 @@
             <version>${archunit-junit5.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
+        <!-- https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>3.2.4</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Adding the engine dependency to the surefire-plugin unfortunately does not work in the current version. -->
         <!-- https://www.archunit.org/userguide/html/000_Index.html#_junit_5 -->
         <dependency>

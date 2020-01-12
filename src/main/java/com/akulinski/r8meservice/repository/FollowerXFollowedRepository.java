@@ -15,8 +15,4 @@ import java.util.List;
 public interface FollowerXFollowedRepository extends JpaRepository<FollowerXFollowed, Long> {
     List<FollowerXFollowed> findAllByFollowed(UserProfile userProfile);
 
-
-    List<FollowerXFollowed> findUserFollowers();
 }
-
-//na tej liscie stream map i zamapowac do UserProfile

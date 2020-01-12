@@ -1,12 +1,17 @@
 package com.akulinski.r8meservice.service;
 
 import com.akulinski.r8meservice.domain.FollowerXFollowed;
+import com.akulinski.r8meservice.domain.User;
+import com.akulinski.r8meservice.domain.UserProfile;
 import com.akulinski.r8meservice.repository.FollowerXFollowedRepository;
 import com.akulinski.r8meservice.repository.UserProfileRepository;
 import com.akulinski.r8meservice.repository.UserRepository;
 import com.akulinski.r8meservice.repository.search.FollowerXFollowedSearchRepository;
+import com.akulinski.r8meservice.security.SecurityUtils;
 import com.akulinski.r8meservice.service.dto.FollowerXFollowedDTO;
+import com.akulinski.r8meservice.service.dto.RateDTO;
 import com.akulinski.r8meservice.service.mapper.FollowerXFollowedMapper;
+import com.akulinski.r8meservice.web.rest.vm.UserProfileVM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -28,6 +34,7 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 @Service
 @Transactional
 public class FollowerXFollowedService {
+
 
     private final Logger log = LoggerFactory.getLogger(FollowerXFollowedService.class);
 
@@ -78,15 +85,39 @@ public class FollowerXFollowedService {
     }
 
     /**
+     * Get All followers of current logged user.
+     *
+     * @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public List<UserProfileVM> findAllUserFollowers() {
+        log.debug("Request to get Followers of current logged user");
+
+        final var userProfile = SecurityUtils.getCurrentUserLogin()
+            .flatMap(userRepository::findOneByLogin)
+            .flatMap(userProfileRepository::findByUser);
+
+        return followerXFollowedRepository.findAllByFollowed(userProfile.get()).stream()
+            .map(FollowerXFollowed::getFollower)
+            .map(mapUserProfileToVMFunction())
+            .collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    /**
      * Get followers of certain User.
      *
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public List<FollowerXFollowedDTO> findUserFollowers() {
+    public List<UserProfileVM> findAllUserFollowers(String username) {
         log.debug("Request to get Followers of certain User");
-        return followerXFollowedRepository.findUserFollowers().stream()
-            .map(followerXFollowedMapper::toDto)
+
+        final var user = userRepository.findOneByLogin(username).orElseThrow(() -> new IllegalStateException(String.format("No user found by username: %s", username)));
+        final var profile = userProfileRepository.findByUser(user).orElseThrow(() -> new IllegalStateException(String.format("No profile connected to user %s", user.getId())));
+
+        return followerXFollowedRepository.findAllByFollowed(profile).stream()
+            .map(FollowerXFollowed::getFollower)
+            .map(mapUserProfileToVMFunction())
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
@@ -152,5 +183,14 @@ public class FollowerXFollowedService {
             .stream(followerXFollowedSearchRepository.search(queryStringQuery(query)).spliterator(), false)
             .map(followerXFollowedMapper::toDto)
             .collect(Collectors.toList());
+    }
+
+    private Function<UserProfile, UserProfileVM> mapUserProfileToVMFunction() {
+        return UserProfile -> {
+
+            User user = UserProfile.getUser();
+            UserProfileVM userProfileVM = new UserProfileVM(user.getLogin(), 0.0, user.getImageUrl(), 0,0);
+            return userProfileVM;
+        };
     }
 }
