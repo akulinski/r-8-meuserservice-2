@@ -1,11 +1,6 @@
 package com.akulinski.r8meservice.web.rest.vm;
 
-
-import com.akulinski.r8meservice.domain.User;
-import com.akulinski.r8meservice.domain.UserProfile;
-
 import java.io.Serializable;
-import java.util.function.Function;
 
 public class UserProfileVM implements Serializable {
 
@@ -43,12 +38,4 @@ public class UserProfileVM implements Serializable {
         return commentsCount;
     }
 
-    public static Function<UserProfile, UserProfileVM> mapUserProfileToVMFunction() {
-        return UserProfile -> {
-
-            User user = UserProfile.getUser();
-            UserProfileVM userProfileVM = new UserProfileVM(user.getLogin(), 0.0, user.getImageUrl(), 0,0);
-            return userProfileVM;
-        };
-    }
 }

@@ -2,10 +2,10 @@ package com.akulinski.r8meservice.web.rest;
 
 import com.akulinski.r8meservice.security.AuthoritiesConstants;
 import com.akulinski.r8meservice.service.FollowerXFollowedService;
+import com.akulinski.r8meservice.service.dto.UserProfileDTO;
 import com.akulinski.r8meservice.web.rest.errors.BadRequestAlertException;
 import com.akulinski.r8meservice.service.dto.FollowerXFollowedDTO;
 
-import com.akulinski.r8meservice.web.rest.vm.UserProfileVM;
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
@@ -106,7 +106,7 @@ public class FollowerXFollowedResource {
      */
     @GetMapping("/faves")
     @ResponseStatus(HttpStatus.OK)
-    public List<UserProfileVM> getAllFollowers() {
+    public List<UserProfileDTO> getAllFollowers() {
         log.debug("REST request to get logged user's followers");
         return followerXFollowedService.findAllUserFollowers();
     }
@@ -118,7 +118,7 @@ public class FollowerXFollowedResource {
      */
     @GetMapping("/faves/{username}")
     @ResponseStatus(HttpStatus.OK)
-    public List<UserProfileVM> getAllUserFollowers(@PathVariable("username") String username) {
+    public List<UserProfileDTO> getAllUserFollowers(@PathVariable("username") String username) {
         log.debug("REST request to get user's followers");
         return followerXFollowedService.findAllUserFollowers(username);
     }
