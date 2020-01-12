@@ -25,11 +25,11 @@ public class FollowerXFollowed implements Serializable {
     private Long id;
 
     @OneToOne
-    @JoinColumn(unique = true)
+    @JoinColumn
     private UserProfile follower;
 
     @OneToOne
-    @JoinColumn(unique = true)
+    @JoinColumn
     private UserProfile followed;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
