@@ -5,11 +5,13 @@ import com.akulinski.r8meservice.service.FollowerXFollowedService;
 import com.akulinski.r8meservice.web.rest.errors.BadRequestAlertException;
 import com.akulinski.r8meservice.service.dto.FollowerXFollowedDTO;
 
+import com.akulinski.r8meservice.web.rest.vm.UserProfileVM;
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -97,15 +99,28 @@ public class FollowerXFollowedResource {
     }
 
     /**
-     * {@code GET  /follower-x-followeds} : get all the followerXFolloweds.
+     * {@code GET  /faves} :  get logged user's followers.
      *
 
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of followerXFolloweds in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of followers in body.
      */
-    @GetMapping("/user-followers")
-    public List<FollowerXFollowedDTO> getUserFollowers() {
+    @GetMapping("/faves")
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserProfileVM> getAllFollowers() {
+        log.debug("REST request to get logged user's followers");
+        return followerXFollowedService.findAllUserFollowers();
+    }
+
+    /**
+     * {@code GET  /faves/{username}} : get user's followers.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of user's followers in body.
+     */
+    @GetMapping("/faves/{username}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserProfileVM> getAllUserFollowers(@PathVariable("username") String username) {
         log.debug("REST request to get user's followers");
-        return followerXFollowedService.findUserFollowers();
+        return followerXFollowedService.findAllUserFollowers(username);
     }
 
     /**
