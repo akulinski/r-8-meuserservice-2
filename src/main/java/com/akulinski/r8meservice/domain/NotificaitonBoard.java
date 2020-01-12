@@ -2,7 +2,6 @@ package com.akulinski.r8meservice.domain;
 
 import lombok.Data;
 import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
 
 import javax.persistence.Id;
 import java.time.Instant;

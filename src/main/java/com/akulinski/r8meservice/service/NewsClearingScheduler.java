@@ -1,15 +1,20 @@
 package com.akulinski.r8meservice.service;
 
-import com.akulinski.r8meservice.domain.*;
+import com.akulinski.r8meservice.domain.SchedulerLog;
+import com.akulinski.r8meservice.domain.SchedulerStatus;
+import com.akulinski.r8meservice.domain.SchedulerType;
 import com.akulinski.r8meservice.repository.SchedulerLogRepository;
 import com.akulinski.r8meservice.repository.search.NotificationBoardRepository;
+import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.stream.Collectors;
 
 /**
  * Scheduler that runs every half and hour and removes
@@ -24,8 +29,14 @@ public class NewsClearingScheduler {
 
     private final SchedulerLogRepository schedulerLogRepository;
 
+    @Value("${config.board.ttl}")
+    private long boardTtl;
+
+    @Value("${config.scheduler.news.timeBetween}")
+    private long timeBetween;
+
     //every half and hour
-    @Scheduled(fixedDelay = 1800000)
+    @Scheduled(fixedRateString = "${scheduler.newscleaingscheduler}")
     public void removeOldQuestionsFromBoard() {
         schedulerLogRepository.findFirstBySchedulerTypeOrderByTimestampDesc(SchedulerType.NEWS_REMOVAL)
             .ifPresentOrElse(this::checkLogTimestampAndStatus, this::tryToRemoveOldQuestionsAndLogResultToDB);
@@ -43,7 +54,7 @@ public class NewsClearingScheduler {
         final var schedulerLogTimeStamp = schedulerLog.getTimestamp();
         Instant now = Instant.now();
 
-        if ((schedulerLogTimeStamp.isBefore(now.minus(6, ChronoUnit.HOURS))) &&
+        if ((schedulerLogTimeStamp.isBefore(now.minus(timeBetween, ChronoUnit.HOURS))) &&
             (schedulerLogTimeStamp.isBefore(now)) ||
             (SchedulerStatus.ERROR.equals(schedulerLog.getSchedulerStatus()))) {
             tryToRemoveOldQuestionsAndLogResultToDB();
@@ -63,28 +74,23 @@ public class NewsClearingScheduler {
         log.info("Removing old questions from notification boards at {}", Instant.now());
 
         try {
-            notificationBoardRepository.findAll().forEach(notificaitonBoard -> notificaitonBoard.getQuestionList().forEach(question -> {
-                checkIfOldAndRemove(notificaitonBoard, question);
-            }));
+            Instant now = Instant.now();
+            Lists.newArrayList(notificationBoardRepository.findAll()).forEach(notificaitonBoard -> {
+                final var collect = notificaitonBoard.getQuestionList().stream()
+                    .filter(question -> (question.getTimeStamp().isAfter(now.minus(boardTtl, ChronoUnit.DAYS)))
+                        && (question.getTimeStamp().isBefore(now))).collect(Collectors.toList());
+                notificaitonBoard.setQuestionList(collect);
+                notificationBoardRepository.save(notificaitonBoard);
+            });
+
             log.info("Removing old questions from notification boards finished at {}", Instant.now());
             schedulerLog.setSchedulerStatus(SchedulerStatus.FINISHED);
             schedulerLogRepository.save(schedulerLog);
 
         } catch (Exception ex) {
-            log.info("Removing old questions from notification boards failed at {} with exception {}", Instant.now(), ex);
+            log.error("Removing old questions from notification boards failed at {} with exception {}", Instant.now(), ex);
             schedulerLog.setSchedulerStatus(SchedulerStatus.ERROR);
             schedulerLogRepository.save(schedulerLog);
-        }
-    }
-
-    public void checkIfOldAndRemove(NotificaitonBoard notificaitonBoard, Question question) {
-        final var questionTimeStamp = question.getTimeStamp();
-        Instant now = Instant.now();
-
-        if ((questionTimeStamp.isBefore(now.minus(2, ChronoUnit.WEEKS))) &&
-            (questionTimeStamp.isBefore(now))) {
-            notificaitonBoard.getQuestionList().remove(question);
-            notificationBoardRepository.save(notificaitonBoard);
         }
     }
 }
