@@ -9,9 +9,8 @@ import com.akulinski.r8meservice.repository.UserRepository;
 import com.akulinski.r8meservice.repository.search.FollowerXFollowedSearchRepository;
 import com.akulinski.r8meservice.security.SecurityUtils;
 import com.akulinski.r8meservice.service.dto.FollowerXFollowedDTO;
-import com.akulinski.r8meservice.service.dto.RateDTO;
+import com.akulinski.r8meservice.service.dto.UserProfileDTO;
 import com.akulinski.r8meservice.service.mapper.FollowerXFollowedMapper;
-import com.akulinski.r8meservice.web.rest.vm.UserProfileVM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,7 +89,7 @@ public class FollowerXFollowedService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public List<UserProfileVM> findAllUserFollowers() {
+    public List<UserProfileDTO> findAllUserFollowers() {
         log.debug("Request to get Followers of current logged user");
 
         final var userProfile = SecurityUtils.getCurrentUserLogin()
@@ -99,7 +98,7 @@ public class FollowerXFollowedService {
 
         return followerXFollowedRepository.findAllByFollowed(userProfile.get()).stream()
             .map(FollowerXFollowed::getFollower)
-            .map(UserProfileVM.mapUserProfileToVMFunction())
+            .map(mapUserProfileToDTOFunction())
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
@@ -109,7 +108,7 @@ public class FollowerXFollowedService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public List<UserProfileVM> findAllUserFollowers(String username) {
+    public List<UserProfileDTO> findAllUserFollowers(String username) {
         log.debug("Request to get Followers of certain User");
 
         final var user = userRepository.findOneByLogin(username).orElseThrow(() -> new IllegalStateException(String.format("No user found by username: %s", username)));
@@ -117,7 +116,7 @@ public class FollowerXFollowedService {
 
         return followerXFollowedRepository.findAllByFollowed(profile).stream()
             .map(FollowerXFollowed::getFollower)
-            .map(UserProfileVM.mapUserProfileToVMFunction())
+            .map(mapUserProfileToDTOFunction())
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
@@ -183,5 +182,18 @@ public class FollowerXFollowedService {
             .stream(followerXFollowedSearchRepository.search(queryStringQuery(query)).spliterator(), false)
             .map(followerXFollowedMapper::toDto)
             .collect(Collectors.toList());
+    }
+
+    public Function<UserProfile, UserProfileDTO> mapUserProfileToDTOFunction() {
+        return UserProfile -> {
+
+            User user = UserProfile.getUser();
+
+            UserProfileDTO userProfileDTO = new UserProfileDTO();
+            userProfileDTO.setUsername(user.getLogin());
+            userProfileDTO.setLink(user.getImageUrl());
+
+            return userProfileDTO;
+        };
     }
 }

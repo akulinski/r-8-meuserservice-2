@@ -11,8 +11,27 @@ public class UserProfileDTO implements Serializable {
 
     private Double currentRating;
 
-
     private Long userId;
+
+    private String link;
+
+    private String username;
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public Long getId() {
         return id;
