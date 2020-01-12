@@ -156,6 +156,10 @@ public class GCPPhotoStorageService implements PhotoStorageService {
         return blobInfo.getMediaLink();
     }
 
+    /**
+     * Create genric user, then upload generic photo
+     * then generic user is removed
+     */
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void uploadGenericProfilePicture() {
@@ -179,12 +183,19 @@ public class GCPPhotoStorageService implements PhotoStorageService {
 
             userRepository.delete(user);
             userSearchRepository.delete(user);
-        } catch (IOException e) {
-            log.error("Could not read generic user photo {}", e.getLocalizedMessage());
+        } catch (RuntimeException ex) {
+            log.error("Could not save generic user {}", ex.getLocalizedMessage());
+        } catch (IOException ex) {
+            log.error("Could not read generic user photo {}", ex.getLocalizedMessage());
         }
 
     }
 
+    /**
+     * Returns generic photo link
+     *
+     * @return
+     */
     public String getGenericPhoto() {
         User user = new User();
         user.setLogin("generic");
