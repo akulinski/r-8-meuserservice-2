@@ -99,7 +99,7 @@ public class FollowerXFollowedService {
 
         return followerXFollowedRepository.findAllByFollowed(userProfile.get()).stream()
             .map(FollowerXFollowed::getFollower)
-            .map(mapUserProfileToVMFunction())
+            .map(UserProfileVM.mapUserProfileToVMFunction())
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
@@ -117,7 +117,7 @@ public class FollowerXFollowedService {
 
         return followerXFollowedRepository.findAllByFollowed(profile).stream()
             .map(FollowerXFollowed::getFollower)
-            .map(mapUserProfileToVMFunction())
+            .map(UserProfileVM.mapUserProfileToVMFunction())
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
@@ -183,14 +183,5 @@ public class FollowerXFollowedService {
             .stream(followerXFollowedSearchRepository.search(queryStringQuery(query)).spliterator(), false)
             .map(followerXFollowedMapper::toDto)
             .collect(Collectors.toList());
-    }
-
-    private Function<UserProfile, UserProfileVM> mapUserProfileToVMFunction() {
-        return UserProfile -> {
-
-            User user = UserProfile.getUser();
-            UserProfileVM userProfileVM = new UserProfileVM(user.getLogin(), 0.0, user.getImageUrl(), 0,0);
-            return userProfileVM;
-        };
     }
 }
