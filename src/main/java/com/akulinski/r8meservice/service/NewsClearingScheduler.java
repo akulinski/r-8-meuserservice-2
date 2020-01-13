@@ -54,6 +54,11 @@ public class NewsClearingScheduler {
         final var schedulerLogTimeStamp = schedulerLog.getTimestamp();
         Instant now = Instant.now();
 
+        //if already running stop
+        if (SchedulerStatus.STARTED.equals(schedulerLog.getSchedulerStatus()))
+            return;
+
+
         if ((schedulerLogTimeStamp.isBefore(now.minus(timeBetween, ChronoUnit.HOURS))) &&
             (schedulerLogTimeStamp.isBefore(now)) ||
             (SchedulerStatus.ERROR.equals(schedulerLog.getSchedulerStatus()))) {
