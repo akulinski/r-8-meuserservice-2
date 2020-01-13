@@ -168,8 +168,16 @@ jhipster:
 
 scheduler:
   profilecalc: 10000000
+  newscleaingscheduler: 10000
 
 mock:
   comments: 10
   ratesPerQuestion: 10
   questions: 10
+
+config:
+  board:
+    ttl: 14
+  scheduler:
+    news:
+      timeBetween: 6
