@@ -2,6 +2,7 @@ package com.akulinski.r8meservice.web.rest;
 
 import com.akulinski.r8meservice.security.AuthoritiesConstants;
 import com.akulinski.r8meservice.service.FollowerXFollowedService;
+import com.akulinski.r8meservice.service.dto.UserProfileDTO;
 import com.akulinski.r8meservice.web.rest.errors.BadRequestAlertException;
 import com.akulinski.r8meservice.service.dto.FollowerXFollowedDTO;
 
@@ -10,6 +11,7 @@ import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -94,6 +96,31 @@ public class FollowerXFollowedResource {
     public List<FollowerXFollowedDTO> getAllFollowerXFolloweds() {
         log.debug("REST request to get all FollowerXFolloweds");
         return followerXFollowedService.findAll();
+    }
+
+    /**
+     * {@code GET  /faves} :  get logged user's followers.
+     *
+
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of followers in body.
+     */
+    @GetMapping("/faves")
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserProfileDTO> getAllFollowers() {
+        log.debug("REST request to get logged user's followers");
+        return followerXFollowedService.findAllUserFollowers();
+    }
+
+    /**
+     * {@code GET  /faves/{username}} : get user's followers.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of user's followers in body.
+     */
+    @GetMapping("/faves/{username}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserProfileDTO> getAllUserFollowers(@PathVariable("username") String username) {
+        log.debug("REST request to get user's followers");
+        return followerXFollowedService.findAllUserFollowers(username);
     }
 
     /**

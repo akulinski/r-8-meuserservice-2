@@ -1,6 +1,5 @@
 package com.akulinski.r8meservice.web.rest.vm;
 
-
 import java.io.Serializable;
 
 public class UserProfileVM implements Serializable {
@@ -38,4 +37,5 @@ public class UserProfileVM implements Serializable {
     public Integer getCommentsCount() {
         return commentsCount;
     }
+
 }
